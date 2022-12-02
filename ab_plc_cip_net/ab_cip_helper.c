@@ -218,8 +218,7 @@ cip_error_code_e read_value(int fd, const char *address, int length, byte_array_
 			response.data = temp;
 			response.length = BUFFER_SIZE;
 
-			bool is_ok = cip_read_response(fd, &response);
-			if (is_ok)
+			if (cip_read_response(fd, &response))
 				ret = cip_analysis_read_byte(response, out_bytes);
 		}
 		free(core_cmd.data);
@@ -243,8 +242,7 @@ cip_error_code_e write_value(int fd, const char *address, int length, ushort typ
 			response.data = temp;
 			response.length = BUFFER_SIZE;
 
-			bool is_ok = cip_read_response(fd, &response);
-			if (is_ok)
+			if (cip_read_response(fd, &response))
 				ret = cip_analysis_write_byte(response);
 		}
 		free(core_cmd.data);
