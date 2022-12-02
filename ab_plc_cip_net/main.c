@@ -3,13 +3,17 @@
 #endif
 #include <stdio.h>
 #include <stdlib.h>
-#pragma warning( disable : 4996)
+#pragma warning(disable : 4996)
 
-#define GET_RESULT(ret){ if(ret != 0) faild_count++; }
+#define GET_RESULT(ret)    \
+	{                      \
+		if (ret != 0)      \
+			faild_count++; \
+	}
 
 #include "ab_cip.h"
 
-int main(int argc, char** argv)
+int main(int argc, char **argv)
 {
 #ifdef _WIN32
 	WSADATA wsa;
@@ -19,7 +23,7 @@ int main(int argc, char** argv)
 	}
 #endif
 
-	char* plc_ip = "192.168.123.26";
+	char *plc_ip = "192.168.123.26";
 	int plc_port = 44818;
 	if (argc > 1)
 	{
@@ -37,7 +41,7 @@ int main(int argc, char** argv)
 		const int TEST_COUNT = 5000;
 		const int TEST_SLEEP_TIME = 1000;
 		int faild_count = 0;
-		char address[50] = { 0 };
+		char address[50] = {0};
 		int i = 0;
 
 		for (i = 0; i < TEST_COUNT; i++)
@@ -142,7 +146,7 @@ int main(int argc, char** argv)
 			GET_RESULT(ret);
 
 			//////////////////////////////////////////////////////////////////////////
-#if true 
+#if true
 			double w_d_val = 12345.6789;
 			ret = ab_cip_write_double(fd, address, w_d_val);
 			printf("Write\t %s \tdouble:\t %lf, \tret: %d\n", address, w_d_val, ret);
@@ -162,7 +166,7 @@ int main(int argc, char** argv)
 			printf("Write\t %s \tstring:\t %s, \tret: %d\n", address, sz_write, ret);
 			GET_RESULT(ret);
 
-			char* str_val = NULL;
+			char *str_val = NULL;
 			ret = ab_cip_read_string(fd, address, &length, &str_val);
 			printf("Read\t %s \tstring:\t %s\n", address, str_val);
 			free(str_val);

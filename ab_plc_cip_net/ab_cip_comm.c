@@ -9,7 +9,7 @@
 /// <param name="address">字符串地址</param>
 /// <param name="isCT">是否是定时器和计数器的地址</param>
 /// <returns></returns>
-int calculate_address_started(const char* address, bool isCT)
+int calculate_address_started(const char *address, bool isCT)
 {
 	int addr_len = strlen(address);
 	if (dynstr_find(address, addr_len, ".", 1))
@@ -19,14 +19,14 @@ int calculate_address_started(const char* address, bool isCT)
 	else
 	{
 		int temp_split_count = 0;
-		dynstr* ret_splits = dynstr_split(address, addr_len, ".", 1, &temp_split_count);
+		dynstr *ret_splits = dynstr_split(address, addr_len, ".", 1, &temp_split_count);
 		return str_to_int(ret_splits[0]) * 8 + dynstr_len(ret_splits[1]);
 	}
 }
 
-siemens_s7_address_data s7_analysis_address(const char* address, int length)
+siemens_s7_address_data s7_analysis_address(const char *address, int length)
 {
-	siemens_s7_address_data address_data = { 0 };
+	siemens_s7_address_data address_data = {0};
 	address_data.length = length;
 	address_data.db_block = 0;
 
@@ -119,7 +119,7 @@ siemens_s7_address_data s7_analysis_address(const char* address, int length)
 		int sub_str_len = 1;
 
 		int temp_split_count = 0;
-		dynstr* ret_splits = dynstr_split(temp_address, strlen(temp_address), ".", 1, &temp_split_count);
+		dynstr *ret_splits = dynstr_split(temp_address, strlen(temp_address), ".", 1, &temp_split_count);
 		if (0 == str_start_with(ret_splits[0], "DB"))
 			sub_str_len = 2;
 
