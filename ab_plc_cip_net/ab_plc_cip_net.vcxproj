@@ -23,7 +23,7 @@
     <ProjectGuid>{181055E5-C375-4C97-84A2-90CD807A17FD}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>melsec_mc_net</RootNamespace>
-    <WindowsTargetPlatformVersion>10.0.19041.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -158,19 +158,15 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="ab_cip.c" />
-    <ClCompile Include="ab_cip_comm.c" />
     <ClCompile Include="ab_cip_helper.c" />
-    <ClCompile Include="dynstr.c" />
     <ClCompile Include="main.c" />
     <ClCompile Include="socket.c" />
     <ClCompile Include="utill.c" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ab_cip.h" />
-    <ClInclude Include="ab_cip_comm.h" />
     <ClInclude Include="ab_cip_helper.h" />
     <ClInclude Include="ab_cip_private.h" />
-    <ClInclude Include="dynstr.h" />
     <ClInclude Include="socket.h" />
     <ClInclude Include="typedef.h" />
     <ClInclude Include="utill.h" />
