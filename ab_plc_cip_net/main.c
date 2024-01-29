@@ -5,11 +5,7 @@
 #include <stdlib.h>
 #pragma warning(disable : 4996)
 
-#define GET_RESULT(ret)    \
-	{                      \
-		if (ret != 0)      \
-			faild_count++; \
-	}
+#define GET_RESULT(ret) { if (ret != 0) failed_count++;}
 
 #include "ab_cip.h"
 
@@ -23,7 +19,7 @@ int main(int argc, char **argv)
 	}
 #endif
 
-	char *plc_ip = "192.168.123.26";
+	char *plc_ip = "192.168.123.131";
 	int plc_port = 44818;
 	if (argc > 1)
 	{
@@ -40,7 +36,7 @@ int main(int argc, char **argv)
 
 		const int TEST_COUNT = 5000;
 		const int TEST_SLEEP_TIME = 1000;
-		int faild_count = 0;
+		int failed_count = 0;
 		char address[50] = {0};
 		int i = 0;
 
@@ -179,7 +175,7 @@ int main(int argc, char **argv)
 #endif
 		}
 
-		printf("All Failed count: %d\n", faild_count);
+		printf("All Failed count: %d\n", failed_count);
 
 		ab_cip_disconnect(fd);
 		system("pause");
