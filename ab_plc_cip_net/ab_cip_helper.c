@@ -38,7 +38,7 @@ byte_array_info build_read_core_command(const char* address, int length)
 	command[0 + 24] = 0x00;
 	command[1 + 24] = 0x00;
 	command[2 + 24] = 0x00;
-	command[3 + 24] = 0x00; // 接口句柄，默认为0x00000000（CIP）
+	command[3 + 24] = 0x00;	// 接口句柄，默认为0x00000000（CIP）
 	command[4 + 24] = 0x01;
 	command[5 + 24] = 0x0A; // 超时（0x000A）
 	command[6 + 24] = 0x02;
@@ -47,8 +47,8 @@ byte_array_info build_read_core_command(const char* address, int length)
 	command[9 + 24] = 0x00; // 空地址项（0x0000）
 	command[10 + 24] = 0x00;
 	command[11 + 24] = 0x00; // 长度（0x0000）
-	command[12 + 24] = 0xB2;
-	command[13 + 24] = 0x00;								  // 未连接数据项（0x00b2）
+	command[12 + 24] = 0xB2; // type id   0xB2:UnConnected Data Item  0xB1:Connected Data Item  0xA1:Connect Address Item
+	command[13 + 24] = 0x00; // 未连接数据项（0x00b2）
 	command[14 + 24] = (byte)((command_len - 16 - 24) % 256); // 后面数据包的长度，等全部生成后在赋值
 	command[15 + 24] = (byte)((command_len - 16 - 24) / 256);
 	command[16 + 24] = 0x52; // 服务类型（0x03请求服务列表，0x52请求标签数据）
@@ -125,10 +125,8 @@ byte_array_info build_write_core_command(const char* address, ushort typeCode, i
 	command[11 + 24] = 0x00; // 空地址项（0x0000）
 	command[12 + 24] = 0xB2;
 	command[13 + 24] = 0x00; // 未连接数据项（0x00b2）
-	command[14 + 24] = (byte)((command_len - 16 - 24) % 256);
-	; // 后面数据包的长度，等全部生成后在赋值
+	command[14 + 24] = (byte)((command_len - 16 - 24) % 256); // 后面数据包的长度，等全部生成后在赋值
 	command[15 + 24] = (byte)((command_len - 16 - 24) / 256);
-	;
 	command[16 + 24] = 0x52; // 服务类型（0x03请求服务列表，0x52请求标签数据）
 	command[17 + 24] = 0x02; // 请求路径大小
 	command[18 + 24] = 0x20;
@@ -263,7 +261,7 @@ bool initialization_on_connect(int fd)
 	temp.length = command_len;
 	is_ok = read_data_from_server(fd, temp, &g_session);
 
-	// 返回成功的信号 -> Return a successful signal
+	// Return a successful signal
 	return is_ok;
 }
 
