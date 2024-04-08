@@ -9,7 +9,7 @@
 
 #include "ab_cip.h"
 
-int main(int argc, char **argv)
+int main(int argc, char** argv)
 {
 #ifdef _WIN32
 	WSADATA wsa;
@@ -19,7 +19,7 @@ int main(int argc, char **argv)
 	}
 #endif
 
-	char *plc_ip = "192.168.123.131";
+	char* plc_ip = "127.0.0.1";
 	int plc_port = 44818;
 	if (argc > 1)
 	{
@@ -37,7 +37,7 @@ int main(int argc, char **argv)
 		const int TEST_COUNT = 5000;
 		const int TEST_SLEEP_TIME = 1000;
 		int failed_count = 0;
-		char address[50] = {0};
+		char address[50] = { 0 };
 		int i = 0;
 
 		for (i = 0; i < TEST_COUNT; i++)
@@ -162,7 +162,7 @@ int main(int argc, char **argv)
 			printf("Write\t %s \tstring:\t %s, \tret: %d\n", address, sz_write, ret);
 			GET_RESULT(ret);
 
-			char *str_val = NULL;
+			char* str_val = NULL;
 			ret = ab_cip_read_string(fd, address, &length, &str_val);
 			printf("Read\t %s \tstring:\t %s\n", address, str_val);
 			free(str_val);
