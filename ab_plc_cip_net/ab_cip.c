@@ -186,16 +186,16 @@ cip_error_code_e ab_cip_read_string(int fd, const char* address, int* length, ch
 		if (ret == CIP_ERROR_CODE_OK && read_data.length > 2)
 		{
 			*length = 0;
-			uint32 str_length = read_data.data[0];
-			if (str_length > 0)
+			if (read_data.length >= 6)
 			{
+				uint32 str_length = bytes2uint32(read_data.data + 2);
 				*length = str_length;
 				int temp_size = str_length + 1;
 				char* ret_str = (char*)malloc(temp_size);
 				if (ret_str != NULL)
 				{
 					memset(ret_str, 0, temp_size);
-					memcpy(ret_str, read_data.data + 1, str_length);
+					memcpy(ret_str, read_data.data + 6, str_length);
 					*val = ret_str;
 				}
 				else
@@ -225,7 +225,7 @@ cip_error_code_e ab_cip_write_bool(int fd, const char* address, bool val)
 			write_data.data[0] = 0xFF;
 			write_data.data[1] = 0xFF;
 		}
-		ret = write_value(fd, address, 1, 0xC1, write_data);
+		ret = write_value(fd, address, 1, CIP_Type_Bool, write_data);
 	}
 	return ret;
 }
@@ -242,7 +242,7 @@ cip_error_code_e ab_cip_write_short(int fd, const char* address, short val)
 		write_data.length = write_len;
 
 		short2bytes(val, write_data.data);
-		ret = write_value(fd, address, 1, 0xC3, write_data);
+		ret = write_value(fd, address, 1, CIP_Type_Word, write_data);
 	}
 	return ret;
 }
@@ -259,7 +259,7 @@ cip_error_code_e ab_cip_write_ushort(int fd, const char* address, ushort val)
 		write_data.length = write_len;
 
 		ushort2bytes(val, write_data.data);
-		ret = write_value(fd, address, 1, 0xC3, write_data);
+		ret = write_value(fd, address, 1, CIP_Type_UInt, write_data);
 	}
 	return ret;
 }
@@ -276,7 +276,7 @@ cip_error_code_e ab_cip_write_int32(int fd, const char* address, int32 val)
 		write_data.length = write_len;
 
 		int2bytes(val, write_data.data);
-		ret = write_value(fd, address, 1, 0xC4, write_data);
+		ret = write_value(fd, address, 1, CIP_Type_DWord, write_data);
 	}
 	return ret;
 }
@@ -293,7 +293,7 @@ cip_error_code_e ab_cip_write_uint32(int fd, const char* address, uint32 val)
 		write_data.length = write_len;
 
 		uint2bytes(val, write_data.data);
-		ret = write_value(fd, address, 1, 0xC4, write_data);
+		ret = write_value(fd, address, 1, CIP_Type_UDint, write_data);
 	}
 	return ret;
 }
@@ -310,7 +310,7 @@ cip_error_code_e ab_cip_write_int64(int fd, const char* address, int64 val)
 		write_data.length = write_len;
 
 		bigInt2bytes(val, write_data.data);
-		ret = write_value(fd, address, 1, 0xC5, write_data);
+		ret = write_value(fd, address, 1, CIP_Type_LInt, write_data);
 	}
 	return ret;
 }
@@ -327,7 +327,7 @@ cip_error_code_e ab_cip_write_uint64(int fd, const char* address, uint64 val)
 		write_data.length = write_len;
 
 		ubigInt2bytes(val, write_data.data);
-		ret = write_value(fd, address, 1, 0xC5, write_data);
+		ret = write_value(fd, address, 1, CIP_Type_ULint, write_data);
 	}
 	return ret;
 }
@@ -344,7 +344,7 @@ cip_error_code_e ab_cip_write_float(int fd, const char* address, float val)
 		write_data.length = write_len;
 
 		float2bytes(val, write_data.data);
-		ret = write_value(fd, address, 1, 0xCA, write_data);
+		ret = write_value(fd, address, 1, CIP_Type_Real, write_data);
 	}
 	return ret;
 }
@@ -361,7 +361,7 @@ cip_error_code_e ab_cip_write_double(int fd, const char* address, double val)
 		write_data.length = write_len;
 
 		double2bytes(val, write_data.data);
-		ret = write_value(fd, address, 1, 0xCB, write_data);
+		ret = write_value(fd, address, 1, CIP_Type_Double, write_data);
 	}
 	return ret;
 }
@@ -382,8 +382,8 @@ cip_error_code_e ab_cip_write_string(int fd, const char* address, int length, co
 			write_data.length = write_len;
 
 			char temp_addr[100] = { 0 };
-			sprintf(temp_addr, "%s", address);
-			ret = write_value(fd, temp_addr, 1, 0xD0, write_data);
+			sprintf(temp_addr, "%s.LEN", address);
+			ret = write_value(fd, temp_addr, 1, CIP_Type_Byte, write_data);
 		}
 		else
 		{

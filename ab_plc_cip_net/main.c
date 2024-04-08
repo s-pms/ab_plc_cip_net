@@ -104,7 +104,7 @@ int main(int argc, char** argv)
 			GET_RESULT(ret);
 
 			//////////////////////////////////////////////////////////////////////////
-#if false
+#if true
 			int64 w_i64_val = 333334554;
 			strcpy(address, "N");
 			ret = ab_cip_write_int64(fd, address, w_i64_val);
@@ -155,10 +155,11 @@ int main(int argc, char** argv)
 
 #endif
 			//////////////////////////////////////////////////////////////////////////
+#if true
 			const char sz_write[] = "wqliceman@gmail.com";
 			int length = strlen(sz_write);
 			strcpy(address, "F");
-			ret = ab_cip_write_string(fd, address, length, sz_write);
+			//ret = ab_cip_write_string(fd, address, length, sz_write);
 			printf("Write\t %s \tstring:\t %s, \tret: %d\n", address, sz_write, ret);
 			GET_RESULT(ret);
 
@@ -167,6 +168,7 @@ int main(int argc, char** argv)
 			printf("Read\t %s \tstring:\t %s\n", address, str_val);
 			free(str_val);
 			GET_RESULT(ret);
+#endif
 
 #ifdef _WIN32
 			Sleep(TEST_SLEEP_TIME);
