@@ -368,22 +368,36 @@ cip_error_code_e ab_cip_write_double(int fd, const char* address, double val)
 
 cip_error_code_e ab_cip_write_string(int fd, const char* address, int length, const char* val)
 {
+	// this functio use Type Code: CIP_Type_Byte
+	// NOT SUPPORT Type Code 0xDA
 	cip_error_code_e ret = CIP_ERROR_CODE_FAILED;
 	if (fd > 0 && address != NULL && val != NULL)
 	{
-		byte write_len = length + 1;
+		// 1. write length is even
+		byte write_len = length;
+		if (write_len % 2 == 1)
+			write_len += 1;
+
 		byte_array_info write_data = { 0 };
 		write_data.data = (byte*)malloc(write_len);
 		if (write_data.data != NULL)
 		{
 			memset(write_data.data, 0, write_len);
-			memcpy(write_data.data, &write_len, 1);
-			memcpy(write_data.data + 1, val, length);
+			memcpy(write_data.data, val, length);
 			write_data.length = write_len;
 
+			// 2. write length
 			char temp_addr[100] = { 0 };
 			sprintf(temp_addr, "%s.LEN", address);
-			ret = write_value(fd, temp_addr, 1, CIP_Type_Byte, write_data);
+			ret = ab_cip_write_int32(fd, temp_addr, length);
+
+			// 3. write data
+			if (ret == CIP_ERROR_CODE_OK)
+			{
+				memset(temp_addr, 0, 100);
+				sprintf(temp_addr, "%s.DATA[0]", address);
+				ret = write_value(fd, temp_addr, 1, CIP_Type_Byte, write_data);
+			}
 		}
 		else
 		{

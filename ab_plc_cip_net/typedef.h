@@ -38,6 +38,8 @@ typedef enum _tag_cip_type
 	CIP_Type_D2 = 0xD2,			// Bit string, 16-bits, WORD
 	CIP_Type_D3 = 0xD3,			// Bit string, 32 bits, DWORD
 	CIP_Type_D4 = 0xD4,			// Bit string, 64 bits LWORD
+	CIP_Type_DA = 0xDA,			// 
+
 }cip_type_e;
 
 #endif // !__H_TYPEDEF_H__

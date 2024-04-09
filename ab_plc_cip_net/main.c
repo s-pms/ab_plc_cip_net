@@ -143,7 +143,9 @@ int main(int argc, char** argv)
 
 			//////////////////////////////////////////////////////////////////////////
 #if true
+			// this function NEED TEST
 			double w_d_val = 12345.6789;
+			strcpy(address, "Double");
 			ret = ab_cip_write_double(fd, address, w_d_val);
 			printf("Write\t %s \tdouble:\t %lf, \tret: %d\n", address, w_d_val, ret);
 			GET_RESULT(ret);
@@ -159,7 +161,7 @@ int main(int argc, char** argv)
 			const char sz_write[] = "wqliceman@gmail.com";
 			int length = strlen(sz_write);
 			strcpy(address, "F");
-			//ret = ab_cip_write_string(fd, address, length, sz_write);
+			ret = ab_cip_write_string(fd, address, length, sz_write);
 			printf("Write\t %s \tstring:\t %s, \tret: %d\n", address, sz_write, ret);
 			GET_RESULT(ret);
 
