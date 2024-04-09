@@ -19,7 +19,7 @@
 #include <arpa/inet.h>
 #endif
 
-int port = 102;
+int port = 44818;
 char ip_address[64] = { 0 };
 
 bool ab_cip_connect(char* ip_addr, int port, int slot, int* fd)
