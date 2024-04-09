@@ -320,8 +320,7 @@ bool read_data_from_server(int fd, byte_array_info send, int* session)
 			is_ok = true;
 		}
 
-		if (response.data != NULL)
-			free(response.data);
+		RELEASE_DATA(response.data);
 	}
 	return is_ok;
 }
