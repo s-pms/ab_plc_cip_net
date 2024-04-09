@@ -308,22 +308,20 @@ bool read_data_from_server(int fd, byte_array_info send, int* session)
 	bool is_ok = false;
 	int need_send = send.length;
 	int real_sends = socket_send_data(fd, send.data, need_send);
-	if (real_sends == need_send)
-	{
-		byte_array_info response = { 0 };
-		is_ok = cip_read_response(fd, &response);
-		if (is_ok)
-		{
-			is_ok = false;
-			if (response.length > 8)
-			{
-				*session = bytes2uint32(response.data + 4);
-				is_ok = true;
-			}
+	if (real_sends != need_send)
+		return false;
 
-			if (response.data != NULL)
-				free(response.data);
+	byte_array_info response = { 0 };
+	if (cip_read_response(fd, &response))
+	{
+		if (response.length > 8)
+		{
+			*session = bytes2uint32(response.data + 4);
+			is_ok = true;
 		}
+
+		if (response.data != NULL)
+			free(response.data);
 	}
 	return is_ok;
 }
