@@ -165,7 +165,7 @@ byte_array_info build_write_core_command(const char* address, ushort typeCode, i
 
 cip_error_code_e cip_analysis_read_byte(byte_array_info response, byte_array_info* ret)
 {
-	cip_error_code_e ret_code = CIP_ERROR_CODE_OK;
+	cip_error_code_e ret_code = CIP_ERROR_CODE_SUCCESS;
 	if (response.length == 0)
 		return CIP_ERROR_CODE_FAILED;
 
@@ -192,7 +192,7 @@ cip_error_code_e cip_analysis_read_byte(byte_array_info response, byte_array_inf
 
 cip_error_code_e cip_analysis_write_byte(byte_array_info response)
 {
-	cip_error_code_e ret_code = CIP_ERROR_CODE_OK;
+	cip_error_code_e ret_code = CIP_ERROR_CODE_SUCCESS;
 	if (response.length == 0)
 		return CIP_ERROR_CODE_FAILED;
 

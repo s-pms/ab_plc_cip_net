@@ -1,77 +1,70 @@
-[English README](README_EN.md)
+## Project Overview
+- Project Name: ab_plc_cip_net
+- Development Language: C
+- Supported Operating Systems: Windows, Linux
+- Test Device: Simulated AB-CIP
 
-## 程序整体介绍
+The current implementation provides a Rockwell AB-PLC communication class utilizing the CIP (EtherNet/IP) protocol. Prior to usage, the Ethernet module on the PLC side must be configured accordingly.
 
-- 项目名称：ab_plc_cip_net
-- 开发语言：C语言
-- 支持操作系统：windows/linux
-- 测试设备：模拟AB-CIP
-
-目前实现功能，实现罗克韦尔AB-PLC通讯类，采用CIP(EtherNet/IP)协议实现，需要在PLC侧先的以太网模块先进行配置。
-
-#### 头文件
-
+#### Header Files
 ```c
-#include "ab_cip.h"  //协议提供方法接口
-#include "typedef.h"   //部分类型宏定义
+#include "ab_cip.h"  // Provides protocol method interfaces
+#include "typedef.h"   // Contains some type macro definitions
 ```
 
-#### 连接属性
+#### Connection Properties
+- port: Port number, typically 44818
+- plc_type: PLC model, compatible with models such as 1756 ControlLogix, 1756 GuardLogix, 1769 CompactLogix, 1769 Compact GuardLogix, 1789SoftLogix, 5069 CompactLogix, 5069 Compact GuardLogix, Studio 5000 Logix Emulate, etc.
 
-- port: 端口号，通常为44818
-- plc_type: plc 型号，适用1756 ControlLogix, 1756 GuardLogix, 1769 CompactLogix, 1769 Compact GuardLogix, 1789SoftLogix, 5069 CompactLogix, 5069 Compact GuardLogix, Studio 5000 Logix Emulate等型号
+#### PLC Address Classification
+Supports tag-based read/write operations (current implementation is limited and does not fully encompass all protocol features).
 
-#### PLC地址分类
-
-支持使用标签的形式进行读写操作(目前实现方法有限,未完全实现所有协议功能)
-
-## 实现方法
-
-#### 1.连接PLC设备
+## Implementation Details
+#### 1. Connecting to PLC Devices
 
 ```c
-byte get_plc_slot();          // 获取PLC槽位
-void set_plc_slot(byte slot); // 设置PLC槽位
+byte get_plc_slot();          // Gets PLC slot number
+void set_plc_slot(byte slot); // Sets the PLC slot number
 
-bool ab_cip_connect(char* ip_addr, int port, int slot, int* fd); // 连接PLC设备
-bool ab_cip_disconnect(int fd); // 断开与PLC的连接
+bool ab_cip_connect(char* ip_addr, int port, int slot, int* fd); // Connects to a PLC device
+bool ab_cip_disconnect(int fd); // Disconnects from the PLC
 ```
 
-#### 2.读取数据
+#### 2. Reading Data
 
 ```c
-cip_error_code_e ab_cip_read_bool(int fd, const char* address, bool* val); // 读取布尔值
-cip_error_code_e ab_cip_read_short(int fd, const char* address, short* val); // 读取短整型
-cip_error_code_e ab_cip_read_ushort(int fd, const char* address, ushort* val); // 读取无符号短整型
-cip_error_code_e ab_cip_read_int32(int fd, const char* address, int32* val); // 读取32位整型
-cip_error_code_e ab_cip_read_uint32(int fd, const char* address, uint32* val); // 读取无符号32位整型
-cip_error_code_e ab_cip_read_int64(int fd, const char* address, int64* val); // 读取64位整型
-cip_error_code_e ab_cip_read_uint64(int fd, const char* address, uint64* val); // 读取无符号64位整型
-cip_error_code_e ab_cip_read_float(int fd, const char* address, float* val); // 读取浮点型
-cip_error_code_e ab_cip_read_double(int fd, const char* address, double* val); // 读取双精度浮点型
-cip_error_code_e ab_cip_read_string(int fd, const char* address, int* length, char** val); // 读取字符串（需要释放val内存）
+cip_error_code_e ab_cip_read_bool(int fd, const char* address, bool* val); // Reads a boolean value
+cip_error_code_e ab_cip_read_short(int fd, const char* address, short* val); // Reads a short integer
+cip_error_code_e ab_cip_read_ushort(int fd, const char* address, ushort* val); // Reads an unsigned short integer
+cip_error_code_e ab_cip_read_int32(int fd, const char* address, int32* val); // Reads a 32-bit integer
+cip_error_code_e ab_cip_read_uint32(int fd, const char* address, uint32* val); // Reads an unsigned 32-bit integer
+cip_error_code_e ab_cip_read_int64(int fd, const char* address, int64* val); // Reads a 64-bit integer
+cip_error_code_e ab_cip_read_uint64(int fd, const char* address, uint64* val); // Reads an unsigned 64-bit integer
+cip_error_code_e ab_cip_read_float(int fd, const char* address, float* val); // Reads a floating-point value
+cip_error_code_e ab_cip_read_double(int fd, const char* address, double* val); // Reads a double-precision floating-point value
+cip_error_code_e ab_cip_read_string(int fd, const char* address, int* length, char** val); // Reads a string (requires freeing memory allocated for `val`)
 ```
 
-#### 3.写入数据
+### 3. Writing Data
 
 ```c
-cip_error_code_e ab_cip_write_bool(int fd, const char* address, bool val); // 写入布尔值
-cip_error_code_e ab_cip_write_short(int fd, const char* address, short val); // 写入短整型
-cip_error_code_e ab_cip_write_ushort(int fd, const char* address, ushort val); // 写入无符号短整型
-cip_error_code_e ab_cip_write_int32(int fd, const char* address, int32 val); // 写入32位整型
-cip_error_code_e ab_cip_write_uint32(int fd, const char* address, uint32 val); // 写入无符号32位整型
-cip_error_code_e ab_cip_write_int64(int fd, const char* address, int64 val); // 写入64位整型
-cip_error_code_e ab_cip_write_uint64(int fd, const char* address, uint64 val); // 写入无符号64位整型
-cip_error_code_e ab_cip_write_float(int fd, const char* address, float val); // 写入浮点型
-cip_error_code_e ab_cip_write_double(int fd, const char* address, double val); // 写入双精度浮点型
-cip_error_code_e ab_cip_write_string(int fd, const char* address, int length, const char* val); // 写入字符串
+cip_error_code_e ab_cip_write_bool(int fd, const char* address, bool val); // Writes a boolean value
+cip_error_code_e ab_cip_write_short(int fd, const char* address, short val); // Writes a short integer
+cip_error_code_e ab_cip_write_ushort(int fd, const char* address, ushort val); // Writes an unsigned short integer
+cip_error_code_e ab_cip_write_int32(int fd, const char* address, int32 val); // Writes a 32-bit integer
+cip_error_code_e ab_cip_write_uint32(int fd, const char* address, uint32 val); // Writes an unsigned 32-bit integer
+cip_error_code_e ab_cip_write_int64(int fd, const char* address, int64 val); // Writes a 64-bit integer
+cip_error_code_e ab_cip_write_uint64(int fd, const char* address, uint64 val); // Writes an unsigned 64-bit integer
+cip_error_code_e ab_cip_write_float(int fd, const char* address, float val); // Writes a floating-point value
+cip_error_code_e ab_cip_write_double(int fd, const char* address, double val); // Writes a double-precision floating-point value
+cip_error_code_e ab_cip_write_string(int fd, const char* address, int length, const char* val); // Writes a string
 ```
 
-## 使用样例
+## Usage Example
 
-完整样例参见代码中**main.c**文件，如下提供主要代码和使用方法：
+Refer to the main.c file in the code for the complete example. Below are the main code segments and usage instructions:
 
-读取地址，格式为"**F**","**D**"
+Reading addresses follows the format "F" or "D".
 
 ```c
 #ifdef _WIN32
