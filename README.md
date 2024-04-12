@@ -18,12 +18,12 @@
 
 #### 连接属性
 
-- port 端口号，通常为44818
-- plc_type plc 型号，适用1756 ControlLogix, 1756 GuardLogix, 1769 CompactLogix, 1769 Compact GuardLogix, 1789SoftLogix, 5069 CompactLogix, 5069 Compact GuardLogix, Studio 5000 Logix Emulate等型号
+- port: 端口号，通常为44818
+- plc_type: plc 型号，适用1756 ControlLogix, 1756 GuardLogix, 1769 CompactLogix, 1769 Compact GuardLogix, 1789SoftLogix, 5069 CompactLogix, 5069 Compact GuardLogix, Studio 5000 Logix Emulate等型号
 
 #### PLC地址分类
 
-支持使用标签的形式进行读写操作
+支持使用标签的形式进行读写操作(目前实现方法有限,未完全实现所有协议功能)
 
 ## 实现方法
 
@@ -79,9 +79,9 @@ cip_error_code_e ab_cip_write_string(int fd, const char* address, int length, co
 #endif
 #include <stdio.h>
 #include <stdlib.h>
-#pragma warning( disable : 4996)
+#pragma warning(disable : 4996)
 
-#define GET_RESULT(ret){ if(ret != 0) faild_count++; }
+#define GET_RESULT(ret) { if (ret != 0) failed_count++;}
 
 #include "ab_cip.h"
 
@@ -95,7 +95,7 @@ int main(int argc, char** argv)
  }
 #endif
 
- char* plc_ip = "192.168.123.26";
+ char* plc_ip = "127.0.0.1";
  int plc_port = 44818;
  if (argc > 1)
  {
@@ -112,7 +112,7 @@ int main(int argc, char** argv)
 
   const int TEST_COUNT = 5000;
   const int TEST_SLEEP_TIME = 1000;
-  int faild_count = 0;
+  int failed_count = 0;
   char address[50] = { 0 };
   int i = 0;
 
@@ -180,7 +180,7 @@ int main(int argc, char** argv)
    GET_RESULT(ret);
 
    //////////////////////////////////////////////////////////////////////////
-#if false
+#if true
    int64 w_i64_val = 333334554;
    strcpy(address, "N");
    ret = ab_cip_write_int64(fd, address, w_i64_val);
@@ -218,8 +218,10 @@ int main(int argc, char** argv)
    GET_RESULT(ret);
 
    //////////////////////////////////////////////////////////////////////////
-#if true 
+#if true
+   // this function NEED TEST
    double w_d_val = 12345.6789;
+   strcpy(address, "Double");
    ret = ab_cip_write_double(fd, address, w_d_val);
    printf("Write\t %s \tdouble:\t %lf, \tret: %d\n", address, w_d_val, ret);
    GET_RESULT(ret);
@@ -231,6 +233,7 @@ int main(int argc, char** argv)
 
 #endif
    //////////////////////////////////////////////////////////////////////////
+#if true
    const char sz_write[] = "wqliceman@gmail.com";
    int length = strlen(sz_write);
    strcpy(address, "F");
@@ -243,6 +246,7 @@ int main(int argc, char** argv)
    printf("Read\t %s \tstring:\t %s\n", address, str_val);
    free(str_val);
    GET_RESULT(ret);
+#endif
 
 #ifdef _WIN32
    Sleep(TEST_SLEEP_TIME);
@@ -251,7 +255,7 @@ int main(int argc, char** argv)
 #endif
   }
 
-  printf("All Failed count: %d\n", faild_count);
+  printf("All Failed count: %d\n", failed_count);
 
   ab_cip_disconnect(fd);
   system("pause");
