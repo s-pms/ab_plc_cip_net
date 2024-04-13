@@ -398,7 +398,7 @@ cip_error_code_e ab_cip_write_double(int fd, const char* address, double val)
 
 cip_error_code_e ab_cip_write_string(int fd, const char* address, int length, const char* val)
 {
-	// this functio use Type Code: CIP_Type_Byte
+	// this function use Type Code: CIP_Type_Byte
 	// NOT SUPPORT Type Code 0xDA
 	if (fd <= 0 || address == NULL || strlen(address) == 0 || val == NULL)
 		return CIP_ERROR_CODE_INVALID_PARAMETER;
