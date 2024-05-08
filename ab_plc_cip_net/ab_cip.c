@@ -204,13 +204,13 @@ cip_error_code_e ab_cip_read_double(int fd, const char* address, double* val)
 
 cip_error_code_e ab_cip_read_string(int fd, const char* address, int* length, char** val)
 {
-	if (length == NULL || *length <= 0)
+	if (length == NULL)
 		return CIP_ERROR_CODE_INVALID_PARAMETER;
 
 	cip_error_code_e ret = CIP_ERROR_CODE_FAILED;
 	byte_array_info read_data;
 	memset(&read_data, 0, sizeof(read_data));
-	ret = read_value(fd, address, *length, &read_data);
+	ret = read_value(fd, address, 1, &read_data);
 	if (ret != CIP_ERROR_CODE_SUCCESS)
 		return ret;
 	if (read_data.length <= 2)
