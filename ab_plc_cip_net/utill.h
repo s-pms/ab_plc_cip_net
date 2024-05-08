@@ -5,14 +5,16 @@
 
 typedef struct _tag_byte_array_info
 {
-	byte* data; // 内容
-	int length; // 长度
+	byte* data;		// 内容
+	int length;		// 长度
+	cip_type_e type;// 数据类型
 } byte_array_info;
 
 typedef struct _tag_bool_array_info
 {
-	bool* data; // 内容
-	int length; // 长度
+	bool* data;		// 内容
+	int length;		// 长度
+	cip_type_e type;// 数据类型
 } bool_array_info;
 
 void short2bytes(short i, byte* bytes);

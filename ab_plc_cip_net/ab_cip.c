@@ -74,7 +74,7 @@ cip_error_code_e ab_cip_read_short(int fd, const char* address, short* val)
 	cip_error_code_e ret = CIP_ERROR_CODE_FAILED;
 	byte_array_info read_data;
 	memset(&read_data, 0, sizeof(read_data));
-	ret = read_value(fd, address, 2, &read_data);
+	ret = read_value(fd, address, 1, &read_data);
 	if (ret == CIP_ERROR_CODE_SUCCESS && read_data.length > 0)
 	{
 		*val = bytes2short(read_data.data);
@@ -91,7 +91,7 @@ cip_error_code_e ab_cip_read_ushort(int fd, const char* address, ushort* val)
 	cip_error_code_e ret = CIP_ERROR_CODE_FAILED;
 	byte_array_info read_data;
 	memset(&read_data, 0, sizeof(read_data));
-	ret = read_value(fd, address, 2, &read_data);
+	ret = read_value(fd, address, 1, &read_data);
 	if (ret == CIP_ERROR_CODE_SUCCESS && read_data.length >= 2)
 	{
 		*val = bytes2ushort(read_data.data);
@@ -108,7 +108,7 @@ cip_error_code_e ab_cip_read_int32(int fd, const char* address, int32* val)
 	cip_error_code_e ret = CIP_ERROR_CODE_FAILED;
 	byte_array_info read_data;
 	memset(&read_data, 0, sizeof(read_data));
-	ret = read_value(fd, address, 4, &read_data);
+	ret = read_value(fd, address, 1, &read_data);
 	if (ret == CIP_ERROR_CODE_SUCCESS && read_data.length >= 4)
 	{
 		*val = bytes2int32(read_data.data);
@@ -125,7 +125,7 @@ cip_error_code_e ab_cip_read_uint32(int fd, const char* address, uint32* val)
 	cip_error_code_e ret = CIP_ERROR_CODE_FAILED;
 	byte_array_info read_data;
 	memset(&read_data, 0, sizeof(read_data));
-	ret = read_value(fd, address, 4, &read_data);
+	ret = read_value(fd, address, 1, &read_data);
 	if (ret == CIP_ERROR_CODE_SUCCESS && read_data.length >= 2)
 	{
 		*val = bytes2uint32(read_data.data);
@@ -142,7 +142,7 @@ cip_error_code_e ab_cip_read_int64(int fd, const char* address, int64* val)
 	cip_error_code_e ret = CIP_ERROR_CODE_FAILED;
 	byte_array_info read_data;
 	memset(&read_data, 0, sizeof(read_data));
-	ret = read_value(fd, address, 8, &read_data);
+	ret = read_value(fd, address, 1, &read_data);
 	if (ret == CIP_ERROR_CODE_SUCCESS && read_data.length >= 8)
 	{
 		*val = bytes2bigInt(read_data.data);
@@ -159,7 +159,7 @@ cip_error_code_e ab_cip_read_uint64(int fd, const char* address, uint64* val)
 	cip_error_code_e ret = CIP_ERROR_CODE_FAILED;
 	byte_array_info read_data;
 	memset(&read_data, 0, sizeof(read_data));
-	ret = read_value(fd, address, 8, &read_data);
+	ret = read_value(fd, address, 1, &read_data);
 	if (ret == CIP_ERROR_CODE_SUCCESS && read_data.length >= 8)
 	{
 		*val = bytes2ubigInt(read_data.data);
@@ -176,7 +176,7 @@ cip_error_code_e ab_cip_read_float(int fd, const char* address, float* val)
 	cip_error_code_e ret = CIP_ERROR_CODE_FAILED;
 	byte_array_info read_data;
 	memset(&read_data, 0, sizeof(read_data));
-	ret = read_value(fd, address, 4, &read_data);
+	ret = read_value(fd, address, 1, &read_data);
 	if (ret == CIP_ERROR_CODE_SUCCESS && read_data.length >= 4)
 	{
 		*val = bytes2float(read_data.data);
@@ -193,7 +193,7 @@ cip_error_code_e ab_cip_read_double(int fd, const char* address, double* val)
 	cip_error_code_e ret = CIP_ERROR_CODE_FAILED;
 	byte_array_info read_data;
 	memset(&read_data, 0, sizeof(read_data));
-	ret = read_value(fd, address, 8, &read_data);
+	ret = read_value(fd, address, 1, &read_data);
 	if (ret == CIP_ERROR_CODE_SUCCESS && read_data.length >= 8)
 	{
 		*val = bytes2double(read_data.data);

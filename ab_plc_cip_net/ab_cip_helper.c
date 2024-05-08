@@ -171,7 +171,7 @@ cip_error_code_e cip_analysis_read_byte(byte_array_info response, byte_array_inf
 
 	int temp_length = 0;
 	int data_length = 0;
-	if (response.length >= 40) // index 38 is count[ushort]
+	if (response.length >= 40) // index 38 is data length[ushort]
 	{
 		data_length = bytes2ushort(response.data + 38);
 		if (data_length > 6)
@@ -180,6 +180,7 @@ cip_error_code_e cip_analysis_read_byte(byte_array_info response, byte_array_inf
 			ret->data = (byte*)malloc(temp_length);
 			memset(ret->data, 0, temp_length);
 			memcpy(ret->data, response.data + 46, temp_length);
+			ret->type = bytes2ushort(response.data + 44);
 			ret->length = temp_length;
 		}
 	}
@@ -199,7 +200,15 @@ cip_error_code_e cip_analysis_write_byte(byte_array_info response)
 	return ret_code;
 }
 
-//////////////////////////////////////////////////////////////////////////
+/// <summary>
+/// 读取数据
+/// 长度(length)默认为：1
+/// </summary>
+/// <param name="fd"></param>
+/// <param name="address"></param>
+/// <param name="length"></param>
+/// <param name="out_bytes"></param>
+/// <returns></returns>
 cip_error_code_e read_value(int fd, const char* address, int length, byte_array_info* out_bytes)
 {
 	cip_error_code_e ret = CIP_ERROR_CODE_UNKOWN;
