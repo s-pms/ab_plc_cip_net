@@ -40,22 +40,6 @@ int main(int argc, char** argv)
 		char address[50] = { 0 };
 		int i = 0;
 
-		const char sz_write[] = "wqliceman@gmail.com";
-		int length = strlen(sz_write);
-		strcpy(address, "F");
-		ret = ab_cip_write_string(fd, address, length, sz_write);
-		printf("Write\t %s \tstring:\t %s, \tret: %d\n", address, sz_write, ret);
-		GET_RESULT(ret);
-
-		char* str_val = NULL;
-		strcpy(address, "F");
-		ret = ab_cip_read_string(fd, address, &length, &str_val);
-		printf("Read\t %s \tstring:\t %s\n", address, str_val);
-		free(str_val);
-		GET_RESULT(ret);
-
-		return 0;
-
 		for (i = 0; i < TEST_COUNT; i++)
 		{
 			printf("==============Test count: %d==============\n", i + 1);
@@ -174,13 +158,8 @@ int main(int argc, char** argv)
 #endif
 			//////////////////////////////////////////////////////////////////////////
 #if true
-			const char sz_write[] = "wqliceman@gmail.com";
-			int length = strlen(sz_write);
+			int length = 0;
 			strcpy(address, "F");
-			ret = ab_cip_write_string(fd, address, length, sz_write);
-			printf("Write\t %s \tstring:\t %s, \tret: %d\n", address, sz_write, ret);
-			GET_RESULT(ret);
-
 			char* str_val = NULL;
 			ret = ab_cip_read_string(fd, address, &length, &str_val);
 			printf("Read\t %s \tstring:\t %s\n", address, str_val);

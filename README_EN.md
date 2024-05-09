@@ -57,6 +57,7 @@ cip_error_code_e ab_cip_write_int64(int fd, const char* address, int64 val); // 
 cip_error_code_e ab_cip_write_uint64(int fd, const char* address, uint64 val); // Writes an unsigned 64-bit integer
 cip_error_code_e ab_cip_write_float(int fd, const char* address, float val); // Writes a floating-point value
 cip_error_code_e ab_cip_write_double(int fd, const char* address, double val); // Writes a double-precision floating-point value
+// Not supported at the moment, there is a bug
 cip_error_code_e ab_cip_write_string(int fd, const char* address, int length, const char* val); // Writes a string
 ```
 

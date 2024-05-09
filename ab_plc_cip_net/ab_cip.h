@@ -35,6 +35,9 @@ cip_error_code_e ab_cip_write_int64(int fd, const char* address, int64 val);
 cip_error_code_e ab_cip_write_uint64(int fd, const char* address, uint64 val);
 cip_error_code_e ab_cip_write_float(int fd, const char* address, float val);
 cip_error_code_e ab_cip_write_double(int fd, const char* address, double val);
+#if false
+// Not supported at the moment, there is a bug
 cip_error_code_e ab_cip_write_string(int fd, const char* address, int length, const char* val);
+#endif
 
 #endif //__H_AB_CIP_H__
