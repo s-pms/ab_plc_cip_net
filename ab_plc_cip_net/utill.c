@@ -26,8 +26,6 @@
 
 void short2bytes(short i, byte* bytes)
 {
-	int size = 2;
-	memset(bytes, 0, sizeof(byte) * size);
 	bytes[0] = (byte)(0xff & i);
 	bytes[1] = (byte)((0xff00 & i) >> 8);
 }
@@ -41,8 +39,6 @@ short bytes2short(byte* bytes)
 
 void ushort2bytes(ushort i, byte* bytes)
 {
-	int size = 2;
-	memset(bytes, 0, sizeof(byte) * size);
 	bytes[0] = (byte)(0xff & i);
 	bytes[1] = (byte)((0xff00 & i) >> 8);
 }
@@ -56,8 +52,6 @@ ushort bytes2ushort(byte* bytes)
 
 void int2bytes(int32 i, byte* bytes)
 {
-	int size = 4;
-	memset(bytes, 0, sizeof(byte) * size);
 	bytes[0] = (byte)(0xff & i);
 	bytes[1] = (byte)((0xff00 & i) >> 8);
 	bytes[2] = (byte)((0xff0000 & i) >> 16);
@@ -75,8 +69,6 @@ int32 bytes2int32(byte* bytes)
 
 void uint2bytes(uint32 i, byte* bytes)
 {
-	int size = 4;
-	memset(bytes, 0, sizeof(byte) * size);
 	bytes[0] = (byte)(0xff & i);
 	bytes[1] = (byte)((0xff00 & i) >> 8);
 	bytes[2] = (byte)((0xff0000 & i) >> 16);
@@ -94,16 +86,9 @@ uint32 bytes2uint32(byte* bytes)
 
 void bigInt2bytes(int64 i, byte* bytes)
 {
-	int size = 8;
-	memset(bytes, 0, sizeof(byte) * size);
-	bytes[0] = (byte)(0xff & i);
-	bytes[1] = (byte)(0xff & (i >> 8));
-	bytes[2] = (byte)(0xff & (i >> 16));
-	bytes[3] = (byte)(0xff & (i >> 24));
-	bytes[4] = (byte)(0xff & (i >> 32));
-	bytes[5] = (byte)(0xff & (i >> 40));
-	bytes[6] = (byte)(0xff & (i >> 48));
-	bytes[7] = (byte)(0xff & (i >> 56));
+	for (int j = 0; j < 8; j++) {
+		bytes[j] = (byte)((i >> (j * 8)) & 0xFF);
+	}
 }
 
 int64 bytes2bigInt(byte* bytes)
@@ -121,16 +106,9 @@ int64 bytes2bigInt(byte* bytes)
 
 void ubigInt2bytes(uint64 i, byte* bytes)
 {
-	int size = 8;
-	memset(bytes, 0, sizeof(byte) * size);
-	bytes[0] = (byte)(0xff & i);
-	bytes[1] = (byte)(0xff & (i >> 8));
-	bytes[2] = (byte)(0xff & (i >> 16));
-	bytes[3] = (byte)(0xff & (i >> 24));
-	bytes[4] = (byte)(0xff & (i >> 32));
-	bytes[5] = (byte)(0xff & (i >> 40));
-	bytes[6] = (byte)(0xff & (i >> 48));
-	bytes[7] = (byte)(0xff & (i >> 56));
+	for (int j = 0; j < 8; j++) {
+		bytes[j] = (byte)((i >> (j * 8)) & 0xFF);
+	}
 }
 
 uint64 bytes2ubigInt(byte* bytes)
@@ -199,7 +177,7 @@ void str_tolower(char* input)
 }
 
 /**
- * ×Ö·û´®originÒÔ×Ö·û´®prefix¿ªÍ·£¬·µ»Ø0£»·ñÔò·µ»Ø1£»Òì³£·µ»Ø-1
+ * ×字符串origin以字符串prefix开头，返回0；否则返回1；异常返回-1
  */
 int str_start_with(const char* origin, char* prefix)
 {
@@ -222,7 +200,7 @@ int str_start_with(const char* origin, char* prefix)
 }
 
 /**
- * ×Ö·û´®originÒÔ×Ö·û´®end½áÎ²£¬·µ»Ø0£»·ñÔò·µ»Ø1£»Òì³£·µ»Ø-1
+ * 字符串origin以字符串end结尾，返回0；否则返回1；异常返回-1
  */
 int str_end_with(const char* origin, char* end)
 {
@@ -328,50 +306,12 @@ char* itoa(unsigned long long value, char str[], int radix)
 
 	*--dest = '\0';
 
-	switch (radix)
+	while (value)
 	{
-	case 16:
-		while (value)
-		{
-			*--dest = '0' + (value & 0xF);
-			if (*dest > '9')
-				*dest += 'A' - '9' - 1;
-			value >>= 4;
-		}
-		break;
-	case 10:
-		while (value)
-		{
-			*--dest = '0' + (value % 10);
-			value /= 10;
-		}
-		break;
-
-	case 8:
-		while (value)
-		{
-			*--dest = '0' + (value & 7);
-			value >>= 3;
-		}
-		break;
-
-	case 2:
-		while (value)
-		{
-			*--dest = '0' + (value & 1);
-			value >>= 1;
-		}
-		break;
-
-	default: // The slow version, but universal
-		while (value)
-		{
-			*--dest = '0' + (value % radix);
-			if (*dest > '9')
-				*dest += 'A' - '9' - 1;
-			value /= radix;
-		}
-		break;
+		*--dest = '0' + (value % radix);
+		if (*dest > '9')
+			*dest += 'A' - '9' - 1;
+		value /= radix;
 	}
 
 	if (sign)
