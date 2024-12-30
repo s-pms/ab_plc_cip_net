@@ -22,11 +22,8 @@ cip_error_code_e cip_analysis_write_byte(byte_array_info response);
 bool read_data_from_server(int fd, byte_array_info send, int* session);
 bool cip_read_response(int fd, byte_array_info* response);
 
-//////////////////////////////////////////////////////////////////////////
 cip_error_code_e read_value(int fd, const char* address, int length, byte_array_info* out_bytes);
 cip_error_code_e write_value(int fd, const char* address, int length, ushort type_code, byte_array_info in_bytes);
-
-//////////////////////////////////////////////////////////////////////////
 
 bool initialization_on_connect(int fd);
 

@@ -3,12 +3,8 @@
 
 #include "typedef.h"
 
-/////////////////////////////////////////////////////////////
-
 byte get_plc_slot();
 void set_plc_slot(byte slot);
-
-/////////////////////////////////////////////////////////////
 
 bool ab_cip_connect(char* ip_addr, int port, int slot, int* fd);
 bool ab_cip_disconnect(int fd);

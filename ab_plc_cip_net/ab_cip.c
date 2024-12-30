@@ -48,7 +48,6 @@ bool ab_cip_disconnect(int fd)
 	return true;
 }
 
-//////////////////////////////////////////////////////////////////////////
 cip_error_code_e ab_cip_read_bool(int fd, const char* address, bool* val)
 {
 	if (fd <= 0 || address == NULL || strlen(address) == 0)
