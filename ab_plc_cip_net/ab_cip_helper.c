@@ -78,7 +78,7 @@ byte_array_info build_read_core_command(const char* address, int length)
 	byte_array_info ret = { 0 };
 	ret.data = command;
 	ret.length = command_len;
-	free(temp_address);
+	RELEASE_DATA(temp_address);
 	return ret;
 }
 
@@ -156,12 +156,12 @@ byte_array_info build_write_core_command(const char* address, ushort typeCode, i
 	command[11 + 26 + 24 + addr_adjust_length + val_len] = g_plc_slot;
 
 	if (value.data != NULL)
-		free(value.data);
+		RELEASE_DATA(value.data);
 
 	byte_array_info ret = { 0 };
 	ret.data = command;
 	ret.length = command_len;
-	free(temp_address);
+	RELEASE_DATA(temp_address);
 	return ret;
 }
 
@@ -224,16 +224,13 @@ cip_error_code_e read_value(int fd, const char* address, int length, byte_array_
 		int real_sends = socket_send_data(fd, core_cmd.data, need_send);
 		if (real_sends == need_send)
 		{
-			byte temp[BUFFER_SIZE] = { 0 };
-			memset(temp, 0, BUFFER_SIZE);
 			byte_array_info response = { 0 };
-			response.data = temp;
-			response.length = BUFFER_SIZE;
-
 			if (cip_read_response(fd, &response))
-				ret = cip_analysis_read_byte(response, out_bytes);
+				ret = cip_analysis_read_byte(response, out_bytes);	
+
+			RELEASE_DATA(response.data);		
 		}
-		free(core_cmd.data);
+		RELEASE_DATA(core_cmd.data);
 	}
 	return ret;
 }
@@ -248,16 +245,13 @@ cip_error_code_e write_value(int fd, const char* address, int length, ushort typ
 		int real_sends = socket_send_data(fd, core_cmd.data, need_send);
 		if (real_sends == need_send)
 		{
-			byte temp[BUFFER_SIZE] = { 0 };
-			memset(temp, 0, BUFFER_SIZE);
 			byte_array_info response = { 0 };
-			response.data = temp;
-			response.length = BUFFER_SIZE;
-
 			if (cip_read_response(fd, &response))
 				ret = cip_analysis_write_byte(response);
+			
+			RELEASE_DATA(response.data);
 		}
-		free(core_cmd.data);
+		RELEASE_DATA(core_cmd.data);
 	}
 	return ret;
 }
@@ -274,6 +268,7 @@ bool initialization_on_connect(int fd)
 	memcpy(temp.data, g_registered_command, command_len);
 	temp.length = command_len;
 	is_ok = read_data_from_server(fd, temp, &g_session);
+	RELEASE_DATA(temp.data);
 
 	// Return a successful signal
 	return is_ok;
@@ -312,7 +307,7 @@ bool cip_read_response(int fd, byte_array_info* response)
 			is_ok = true;
 		}
 
-		free(content);
+		RELEASE_DATA(content);
 	}
 	return is_ok;
 }
