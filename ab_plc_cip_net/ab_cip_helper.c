@@ -78,6 +78,7 @@ byte_array_info build_read_core_command(const char* address, int length)
 	byte_array_info ret = { 0 };
 	ret.data = command;
 	ret.length = command_len;
+	free(temp_address);
 	return ret;
 }
 
@@ -160,6 +161,7 @@ byte_array_info build_write_core_command(const char* address, ushort typeCode, i
 	byte_array_info ret = { 0 };
 	ret.data = command;
 	ret.length = command_len;
+	free(temp_address);
 	return ret;
 }
 
@@ -186,6 +188,9 @@ cip_error_code_e cip_analysis_read_byte(byte_array_info response, byte_array_inf
 	}
 	else
 	{
+		ret_code = CIP_ERROR_CODE_UNKOWN;
+	}
+	if (ret->data == NULL) {
 		ret_code = CIP_ERROR_CODE_UNKOWN;
 	}
 	return ret_code;

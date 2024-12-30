@@ -1,6 +1,7 @@
 #ifndef __H_AB_CIP_HELPER_H__
 #define __H_AB_CIP_HELPER_H__
 #include "utill.h"
+#include <stdlib.h>
 
 #define RELEASE_DATA(addr) \
     {                      \
