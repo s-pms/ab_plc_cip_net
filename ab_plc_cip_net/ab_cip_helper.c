@@ -15,70 +15,77 @@ byte_array_info build_read_core_command(const char* address, int length)
 	size_t addr_adjust_length = addr_length;
 	if (addr_adjust_length % 2 == 1)
 		addr_adjust_length += 1;
-
-	char* temp_address = (char*)malloc(addr_adjust_length);
-	memset(temp_address, 0, addr_adjust_length);
-	memcpy(temp_address, address, strlen(address));
-
-	const ushort command_len = 9 + 26 + (ushort)addr_adjust_length + 1 + 24;
+	ushort command_len = 9 + 26 + (ushort)addr_adjust_length + 1 + 24;
 	byte* command = (byte*)malloc(command_len);
-	memset(command, 0, command_len);
+	if (command != NULL)
+	{
+		memset(command, 0, command_len);
 
-	command[0] = 0x6F; // 命令
-	command[2] = (byte)((command_len - 24) % 256);
-	command[3] = (byte)((command_len - 24) / 256); // 长度
+		char* temp_address = (char*)malloc(addr_adjust_length);
+		if (temp_address != NULL)
+		{
+			memset(temp_address, 0, addr_adjust_length);
+			memcpy(temp_address, address, strlen(address));
 
-	char temp_session[4] = { 0 };
-	uint2bytes(g_session, temp_session);
-	command[4] = temp_session[0];
-	command[5] = temp_session[1];
-	command[6] = temp_session[2];
-	command[7] = temp_session[3]; // 会话句柄
+			command[0] = 0x6F; // 命令
+			command[2] = (byte)((command_len - 24) % 256);
+			command[3] = (byte)((command_len - 24) / 256); // 长度
 
-	command[0 + 24] = 0x00;
-	command[1 + 24] = 0x00;
-	command[2 + 24] = 0x00;
-	command[3 + 24] = 0x00;	// 接口句柄，默认为0x00000000（CIP）
-	command[4 + 24] = 0x01;
-	command[5 + 24] = 0x0A; // 超时（0x000A）
-	command[6 + 24] = 0x02;
-	command[7 + 24] = 0x00; // 项数（0x0002）
-	command[8 + 24] = 0x00;
-	command[9 + 24] = 0x00; // 空地址项（0x0000）
-	command[10 + 24] = 0x00;
-	command[11 + 24] = 0x00; // 长度（0x0000）
-	command[12 + 24] = 0xB2; // type id   0xB2:UnConnected Data Item  0xB1:Connected Data Item  0xA1:Connect Address Item
-	command[13 + 24] = 0x00; // 未连接数据项（0x00b2）
-	command[14 + 24] = (byte)((command_len - 16 - 24) % 256); // 后面数据包的长度，等全部生成后在赋值
-	command[15 + 24] = (byte)((command_len - 16 - 24) / 256);
-	command[16 + 24] = 0x52; // 服务类型（0x03请求服务列表，0x52请求标签数据）
-	command[17 + 24] = 0x02; // 请求路径大小
-	command[18 + 24] = 0x20;
-	command[19 + 24] = 0x06; // 请求路径(0x0620)
-	command[20 + 24] = 0x24;
-	command[21 + 24] = 0x01; // 请求路径(0x0124)
-	command[22 + 24] = 0x0A;
-	command[23 + 24] = 0xF0;
-	command[24 + 24] = (byte)((6 + addr_adjust_length) % 256); // CIP指令长度
-	command[25 + 24] = (byte)((6 + addr_adjust_length) / 256);
+			char temp_session[4] = { 0 };
+			uint2bytes(g_session, temp_session);
+			command[4] = temp_session[0];
+			command[5] = temp_session[1];
+			command[6] = temp_session[2];
+			command[7] = temp_session[3]; // 会话句柄
 
-	command[0 + 24 + 26] = 0x4C; // 读取数据
-	command[1 + 24 + 26] = (byte)((addr_adjust_length + 2) / 2);
-	command[2 + 24 + 26] = 0x91;
-	command[3 + 24 + 26] = (byte)addr_length;
-	memcpy(command + 4 + 24 + 26, temp_address, addr_adjust_length);
-	command[4 + 24 + 26 + addr_adjust_length] = (byte)((length) % 256);
-	command[5 + 24 + 26 + addr_adjust_length] = (byte)((length) / 256);
+			command[0 + 24] = 0x00;
+			command[1 + 24] = 0x00;
+			command[2 + 24] = 0x00;
+			command[3 + 24] = 0x00;	// 接口句柄，默认为0x00000000（CIP）
+			command[4 + 24] = 0x01;
+			command[5 + 24] = 0x0A; // 超时（0x000A）
+			command[6 + 24] = 0x02;
+			command[7 + 24] = 0x00; // 项数（0x0002）
+			command[8 + 24] = 0x00;
+			command[9 + 24] = 0x00; // 空地址项（0x0000）
+			command[10 + 24] = 0x00;
+			command[11 + 24] = 0x00; // 长度（0x0000）
+			command[12 + 24] = 0xB2; // type id   0xB2:UnConnected Data Item  0xB1:Connected Data Item  0xA1:Connect Address Item
+			command[13 + 24] = 0x00; // 未连接数据项（0x00b2）
+			command[14 + 24] = (byte)((command_len - 16 - 24) % 256); // 后面数据包的长度，等全部生成后在赋值
+			command[15 + 24] = (byte)((command_len - 16 - 24) / 256);
+			command[16 + 24] = 0x52; // 服务类型（0x03请求服务列表，0x52请求标签数据）
+			command[17 + 24] = 0x02; // 请求路径大小
+			command[18 + 24] = 0x20;
+			command[19 + 24] = 0x06; // 请求路径(0x0620)
+			command[20 + 24] = 0x24;
+			command[21 + 24] = 0x01; // 请求路径(0x0124)
+			command[22 + 24] = 0x0A;
+			command[23 + 24] = 0xF0;
+			command[24 + 24] = (byte)((6 + addr_adjust_length) % 256); // CIP指令长度
+			command[25 + 24] = (byte)((6 + addr_adjust_length) / 256);
 
-	command[6 + 24 + 26 + addr_adjust_length] = 0x01;
-	command[7 + 24 + 26 + addr_adjust_length] = 0x00;
-	command[8 + 24 + 26 + addr_adjust_length] = 0x01;
-	command[9 + 24 + 26 + addr_adjust_length] = g_plc_slot;
+			command[0 + 24 + 26] = 0x4C; // 读取数据
+			command[1 + 24 + 26] = (byte)((addr_adjust_length + 2) / 2);
+			command[2 + 24 + 26] = 0x91;
+			command[3 + 24 + 26] = (byte)addr_length;
+			memcpy(command + 4 + 24 + 26, temp_address, addr_adjust_length);
+			command[4 + 24 + 26 + addr_adjust_length] = (byte)((length) % 256);
+			command[5 + 24 + 26 + addr_adjust_length] = (byte)((length) / 256);
+
+			command[6 + 24 + 26 + addr_adjust_length] = 0x01;
+			command[7 + 24 + 26 + addr_adjust_length] = 0x00;
+			command[8 + 24 + 26 + addr_adjust_length] = 0x01;
+			command[9 + 24 + 26 + addr_adjust_length] = g_plc_slot;
+		}
+		RELEASE_DATA(temp_address);
+	}
+	else
+		command_len = 0;
 
 	byte_array_info ret = { 0 };
 	ret.data = command;
 	ret.length = command_len;
-	RELEASE_DATA(temp_address);
 	return ret;
 }
 
@@ -93,72 +100,80 @@ byte_array_info build_write_core_command(const char* address, ushort typeCode, i
 	if (addr_adjust_length % 2 == 1)
 		addr_adjust_length += 1;
 
-	char* temp_address = (char*)malloc(addr_adjust_length);
-	memset(temp_address, 0, addr_adjust_length);
-	memcpy(temp_address, address, strlen(address));
-
-	const ushort command_len = 8 + 26 + (ushort)addr_adjust_length + val_len + 4 + 24;
+	ushort command_len = 8 + 26 + (ushort)addr_adjust_length + val_len + 4 + 24;
 	byte* command = (byte*)malloc(command_len);
-	memset(command, 0, command_len);
+	if (command != NULL)
+	{
+		memset(command, 0, command_len);
 
-	command[0] = 0x6F; // 命令
-	command[2] = (byte)((command_len - 24) % 256);
-	command[3] = (byte)((command_len - 24) / 256); // 长度
+		char* temp_address = (char*)malloc(addr_adjust_length);
+		if (temp_address != NULL)
+		{
+			memset(temp_address, 0, addr_adjust_length);
+			memcpy(temp_address, address, strlen(address));
 
-	char temp_session[4] = { 0 };
-	uint2bytes(g_session, temp_session);
-	command[4] = temp_session[0];
-	command[5] = temp_session[1];
-	command[6] = temp_session[2];
-	command[7] = temp_session[3]; // 会话句柄
+			command[0] = 0x6F; // 命令
+			command[2] = (byte)((command_len - 24) % 256);
+			command[3] = (byte)((command_len - 24) / 256); // 长度
 
-	command[0 + 24] = 0x00;
-	command[1 + 24] = 0x00;
-	command[2 + 24] = 0x00;
-	command[3 + 24] = 0x00; // 接口句柄，默认为0x00000000（CIP）
-	command[4 + 24] = 0x01;
-	command[5 + 24] = 0x0A; // 超时（0x0001）
-	command[6 + 24] = 0x02;
-	command[7 + 24] = 0x00; // 项数（0x0002）
-	command[8 + 24] = 0x00;
-	command[9 + 24] = 0x00;
-	command[10 + 24] = 0x00;
-	command[11 + 24] = 0x00; // 空地址项（0x0000）
-	command[12 + 24] = 0xB2;
-	command[13 + 24] = 0x00; // 未连接数据项（0x00b2）
-	command[14 + 24] = (byte)((command_len - 16 - 24) % 256); // 后面数据包的长度，等全部生成后在赋值
-	command[15 + 24] = (byte)((command_len - 16 - 24) / 256);
-	command[16 + 24] = 0x52; // 服务类型（0x03请求服务列表，0x52请求标签数据）
-	command[17 + 24] = 0x02; // 请求路径大小
-	command[18 + 24] = 0x20;
-	command[19 + 24] = 0x06; // 请求路径(0x0620)
-	command[20 + 24] = 0x24;
-	command[21 + 24] = 0x01; // 请求路径(0x0124)
-	command[22 + 24] = 0x0A;
-	command[23 + 24] = 0xF0;
-	command[24 + 24] = (byte)((8 + val_len + addr_adjust_length) % 256); // CIP指令长度
-	command[25 + 24] = (byte)((8 + val_len + addr_adjust_length) / 256);
+			char temp_session[4] = { 0 };
+			uint2bytes(g_session, temp_session);
+			command[4] = temp_session[0];
+			command[5] = temp_session[1];
+			command[6] = temp_session[2];
+			command[7] = temp_session[3]; // 会话句柄
 
-	command[0 + 26 + 24] = 0x4D; // 写数据
-	command[1 + 26 + 24] = (byte)((addr_adjust_length + 2) / 2);
-	command[2 + 26 + 24] = 0x91;
-	command[3 + 26 + 24] = (byte)addr_length;
-	memcpy(command + 4 + 26 + 24, temp_address, addr_adjust_length);
-	command[4 + 26 + 24 + addr_adjust_length] = (byte)(typeCode % 256);
-	command[5 + 26 + 24 + addr_adjust_length] = (byte)(typeCode) / 256;
-	command[6 + 26 + 24 + addr_adjust_length] = (byte)(length % 256); // TODO length ??
-	command[7 + 26 + 24 + addr_adjust_length] = (byte)(length / 256);
-	memcpy(command + 8 + 26 + 24 + addr_adjust_length, value.data, value.length);
+			command[0 + 24] = 0x00;
+			command[1 + 24] = 0x00;
+			command[2 + 24] = 0x00;
+			command[3 + 24] = 0x00; // 接口句柄，默认为0x00000000（CIP）
+			command[4 + 24] = 0x01;
+			command[5 + 24] = 0x0A; // 超时（0x0001）
+			command[6 + 24] = 0x02;
+			command[7 + 24] = 0x00; // 项数（0x0002）
+			command[8 + 24] = 0x00;
+			command[9 + 24] = 0x00;
+			command[10 + 24] = 0x00;
+			command[11 + 24] = 0x00; // 空地址项（0x0000）
+			command[12 + 24] = 0xB2;
+			command[13 + 24] = 0x00; // 未连接数据项（0x00b2）
+			command[14 + 24] = (byte)((command_len - 16 - 24) % 256); // 后面数据包的长度，等全部生成后在赋值
+			command[15 + 24] = (byte)((command_len - 16 - 24) / 256);
+			command[16 + 24] = 0x52; // 服务类型（0x03请求服务列表，0x52请求标签数据）
+			command[17 + 24] = 0x02; // 请求路径大小
+			command[18 + 24] = 0x20;
+			command[19 + 24] = 0x06; // 请求路径(0x0620)
+			command[20 + 24] = 0x24;
+			command[21 + 24] = 0x01; // 请求路径(0x0124)
+			command[22 + 24] = 0x0A;
+			command[23 + 24] = 0xF0;
+			command[24 + 24] = (byte)((8 + val_len + addr_adjust_length) % 256); // CIP指令长度
+			command[25 + 24] = (byte)((8 + val_len + addr_adjust_length) / 256);
 
-	command[8 + 26 + 24 + addr_adjust_length + val_len] = 0x01;
-	command[9 + 26 + 24 + addr_adjust_length + val_len] = 0x00;
-	command[10 + 26 + 24 + addr_adjust_length + val_len] = 0x01;
-	command[11 + 26 + 24 + addr_adjust_length + val_len] = g_plc_slot;
+			command[0 + 26 + 24] = 0x4D; // 写数据
+			command[1 + 26 + 24] = (byte)((addr_adjust_length + 2) / 2);
+			command[2 + 26 + 24] = 0x91;
+			command[3 + 26 + 24] = (byte)addr_length;
+			memcpy(command + 4 + 26 + 24, temp_address, addr_adjust_length);
+			command[4 + 26 + 24 + addr_adjust_length] = (byte)(typeCode % 256);
+			command[5 + 26 + 24 + addr_adjust_length] = (byte)(typeCode) / 256;
+			command[6 + 26 + 24 + addr_adjust_length] = (byte)(length % 256); // TODO length ??
+			command[7 + 26 + 24 + addr_adjust_length] = (byte)(length / 256);
+			memcpy(command + 8 + 26 + 24 + addr_adjust_length, value.data, value.length);
+
+			command[8 + 26 + 24 + addr_adjust_length + val_len] = 0x01;
+			command[9 + 26 + 24 + addr_adjust_length + val_len] = 0x00;
+			command[10 + 26 + 24 + addr_adjust_length + val_len] = 0x01;
+			command[11 + 26 + 24 + addr_adjust_length + val_len] = g_plc_slot;
+		}
+		RELEASE_DATA(temp_address);
+	}
+	else
+		command_len = 0;
 
 	byte_array_info ret = { 0 };
 	ret.data = command;
 	ret.length = command_len;
-	RELEASE_DATA(temp_address);
 	return ret;
 }
 
@@ -177,10 +192,15 @@ cip_error_code_e cip_analysis_read_byte(byte_array_info response, byte_array_inf
 		{
 			temp_length = data_length - 6;
 			ret->data = (byte*)malloc(temp_length);
-			memset(ret->data, 0, temp_length);
-			memcpy(ret->data, response.data + 46, temp_length);
-			ret->type = bytes2ushort(response.data + 44);
-			ret->length = temp_length;
+			if (ret->data != NULL)
+			{
+				memset(ret->data, 0, temp_length);
+				memcpy(ret->data, response.data + 46, temp_length);
+				ret->type = bytes2ushort(response.data + 44);
+				ret->length = temp_length;
+			}
+			else
+				ret_code = CIP_ERROR_CODE_MALLOC_FAILED;
 		}
 	}
 	else
@@ -223,9 +243,9 @@ cip_error_code_e read_value(int fd, const char* address, int length, byte_array_
 		{
 			byte_array_info response = { 0 };
 			if (cip_read_response(fd, &response))
-				ret = cip_analysis_read_byte(response, out_bytes);	
+				ret = cip_analysis_read_byte(response, out_bytes);
 
-			RELEASE_DATA(response.data);		
+			RELEASE_DATA(response.data);
 		}
 		RELEASE_DATA(core_cmd.data);
 	}
@@ -245,7 +265,7 @@ cip_error_code_e write_value(int fd, const char* address, int length, ushort typ
 			byte_array_info response = { 0 };
 			if (cip_read_response(fd, &response))
 				ret = cip_analysis_write_byte(response);
-			
+
 			RELEASE_DATA(response.data);
 		}
 		RELEASE_DATA(core_cmd.data);
@@ -262,10 +282,13 @@ bool initialization_on_connect(int fd)
 	byte_array_info temp = { 0 };
 	int command_len = sizeof(g_registered_command);
 	temp.data = (byte*)malloc(command_len);
-	memcpy(temp.data, g_registered_command, command_len);
-	temp.length = command_len;
-	is_ok = read_data_from_server(fd, temp, &g_session);
-	RELEASE_DATA(temp.data);
+	if (temp.data != NULL)
+	{
+		memcpy(temp.data, g_registered_command, command_len);
+		temp.length = command_len;
+		is_ok = read_data_from_server(fd, temp, &g_session);
+		RELEASE_DATA(temp.data);
+	}
 
 	// Return a successful signal
 	return is_ok;
@@ -297,11 +320,14 @@ bool cip_read_response(int fd, byte_array_info* response)
 		{
 			response->length = HEAD_SIZE + content_size;
 			response->data = (byte*)malloc(response->length);
-			memset(response->data, 0, response->length);
-			memcpy(response->data, head, HEAD_SIZE);
-			memcpy(response->data + HEAD_SIZE, content, content_size);
+			if (response->data != NULL)
+			{
+				memset(response->data, 0, response->length);
+				memcpy(response->data, head, HEAD_SIZE);
+				memcpy(response->data + HEAD_SIZE, content, content_size);
 
-			is_ok = true;
+				is_ok = true;
+			}
 		}
 
 		RELEASE_DATA(content);
