@@ -155,9 +155,6 @@ byte_array_info build_write_core_command(const char* address, ushort typeCode, i
 	command[10 + 26 + 24 + addr_adjust_length + val_len] = 0x01;
 	command[11 + 26 + 24 + addr_adjust_length + val_len] = g_plc_slot;
 
-	if (value.data != NULL)
-		RELEASE_DATA(value.data);
-
 	byte_array_info ret = { 0 };
 	ret.data = command;
 	ret.length = command_len;

@@ -8,6 +8,7 @@
         if (addr != NULL)  \
         {                  \
             free(addr);    \
+            addr = NULL;   \
         }                  \
     }
 #define BUFFER_SIZE 1024
