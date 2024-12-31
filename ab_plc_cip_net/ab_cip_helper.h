@@ -3,14 +3,6 @@
 #include "utill.h"
 #include <stdlib.h>
 
-#define RELEASE_DATA(addr) \
-    {                      \
-        if (addr != NULL)  \
-        {                  \
-            free(addr);    \
-            addr = NULL;   \
-        }                  \
-    }
 #define BUFFER_SIZE 1024
 #define HEAD_SIZE 24
 
