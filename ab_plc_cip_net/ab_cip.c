@@ -31,6 +31,9 @@ char ip_address[64] = { 0 };
 
 bool ab_cip_connect(char* ip_addr, int port, int slot, int* fd)
 {
+	if (ip_addr == NULL || fd == NULL)
+		return false;
+
 	bool ret = false;
 	int temp_fd = -1;
 	g_plc_slot = slot;
@@ -57,7 +60,7 @@ bool ab_cip_disconnect(int fd)
 
 cip_error_code_e ab_cip_read_bool(int fd, const char* address, bool* val)
 {
-	if (fd <= 0 || address == NULL || strlen(address) == 0)
+	if (fd <= 0 || address == NULL || strlen(address) == 0 || val == NULL)
 		return CIP_ERROR_CODE_INVALID_PARAMETER;
 
 	cip_error_code_e ret = CIP_ERROR_CODE_FAILED;
@@ -74,7 +77,7 @@ cip_error_code_e ab_cip_read_bool(int fd, const char* address, bool* val)
 
 cip_error_code_e ab_cip_read_short(int fd, const char* address, short* val)
 {
-	if (fd <= 0 || address == NULL || strlen(address) == 0)
+	if (fd <= 0 || address == NULL || strlen(address) == 0 || val == NULL)
 		return CIP_ERROR_CODE_INVALID_PARAMETER;
 
 	cip_error_code_e ret = CIP_ERROR_CODE_FAILED;
@@ -91,7 +94,7 @@ cip_error_code_e ab_cip_read_short(int fd, const char* address, short* val)
 
 cip_error_code_e ab_cip_read_ushort(int fd, const char* address, ushort* val)
 {
-	if (fd <= 0 || address == NULL || strlen(address) == 0)
+	if (fd <= 0 || address == NULL || strlen(address) == 0 || val == NULL)
 		return CIP_ERROR_CODE_INVALID_PARAMETER;
 
 	cip_error_code_e ret = CIP_ERROR_CODE_FAILED;
@@ -108,7 +111,7 @@ cip_error_code_e ab_cip_read_ushort(int fd, const char* address, ushort* val)
 
 cip_error_code_e ab_cip_read_int32(int fd, const char* address, int32* val)
 {
-	if (fd <= 0 || address == NULL || strlen(address) == 0)
+	if (fd <= 0 || address == NULL || strlen(address) == 0 || val == NULL)
 		return CIP_ERROR_CODE_INVALID_PARAMETER;
 
 	cip_error_code_e ret = CIP_ERROR_CODE_FAILED;
@@ -125,14 +128,14 @@ cip_error_code_e ab_cip_read_int32(int fd, const char* address, int32* val)
 
 cip_error_code_e ab_cip_read_uint32(int fd, const char* address, uint32* val)
 {
-	if (fd <= 0 || address == NULL || strlen(address) == 0)
+	if (fd <= 0 || address == NULL || strlen(address) == 0 || val == NULL)
 		return CIP_ERROR_CODE_INVALID_PARAMETER;
 
 	cip_error_code_e ret = CIP_ERROR_CODE_FAILED;
 	byte_array_info read_data;
 	memset(&read_data, 0, sizeof(read_data));
 	ret = read_value(fd, address, 1, &read_data);
-	if (ret == CIP_ERROR_CODE_SUCCESS && read_data.length >= 2)
+	if (ret == CIP_ERROR_CODE_SUCCESS && read_data.length >= 4)
 	{
 		*val = bytes2uint32(read_data.data);
 	}
@@ -142,7 +145,7 @@ cip_error_code_e ab_cip_read_uint32(int fd, const char* address, uint32* val)
 
 cip_error_code_e ab_cip_read_int64(int fd, const char* address, int64* val)
 {
-	if (fd <= 0 || address == NULL || strlen(address) == 0)
+	if (fd <= 0 || address == NULL || strlen(address) == 0 || val == NULL)
 		return CIP_ERROR_CODE_INVALID_PARAMETER;
 
 	cip_error_code_e ret = CIP_ERROR_CODE_FAILED;
@@ -159,7 +162,7 @@ cip_error_code_e ab_cip_read_int64(int fd, const char* address, int64* val)
 
 cip_error_code_e ab_cip_read_uint64(int fd, const char* address, uint64* val)
 {
-	if (fd <= 0 || address == NULL || strlen(address) == 0)
+	if (fd <= 0 || address == NULL || strlen(address) == 0 || val == NULL)
 		return CIP_ERROR_CODE_INVALID_PARAMETER;
 
 	cip_error_code_e ret = CIP_ERROR_CODE_FAILED;
@@ -176,7 +179,7 @@ cip_error_code_e ab_cip_read_uint64(int fd, const char* address, uint64* val)
 
 cip_error_code_e ab_cip_read_float(int fd, const char* address, float* val)
 {
-	if (fd <= 0 || address == NULL || strlen(address) == 0)
+	if (fd <= 0 || address == NULL || strlen(address) == 0 || val == NULL)
 		return CIP_ERROR_CODE_INVALID_PARAMETER;
 
 	cip_error_code_e ret = CIP_ERROR_CODE_FAILED;
@@ -193,7 +196,7 @@ cip_error_code_e ab_cip_read_float(int fd, const char* address, float* val)
 
 cip_error_code_e ab_cip_read_double(int fd, const char* address, double* val)
 {
-	if (fd <= 0 || address == NULL || strlen(address) == 0)
+	if (fd <= 0 || address == NULL || strlen(address) == 0 || val == NULL)
 		return CIP_ERROR_CODE_INVALID_PARAMETER;
 
 	cip_error_code_e ret = CIP_ERROR_CODE_FAILED;
@@ -210,23 +213,36 @@ cip_error_code_e ab_cip_read_double(int fd, const char* address, double* val)
 
 cip_error_code_e ab_cip_read_string(int fd, const char* address, int* length, char** val)
 {
-	if (length == NULL)
+	if (fd <= 0 || address == NULL || strlen(address) == 0 || length == NULL || val == NULL)
 		return CIP_ERROR_CODE_INVALID_PARAMETER;
 
 	cip_error_code_e ret = CIP_ERROR_CODE_FAILED;
 	byte_array_info read_data;
 	memset(&read_data, 0, sizeof(read_data));
+	*length = 0;
+	*val = NULL;
+
 	ret = read_value(fd, address, 1, &read_data);
 	if (ret != CIP_ERROR_CODE_SUCCESS)
-		return ret;
-	if (read_data.length <= 2)
-		return CIP_ERROR_CODE_FAILED;
+	{
+		goto cleanup;
+	}
+	if (read_data.length < 6)
+	{
+		ret = CIP_ERROR_CODE_FAILED;
+		goto cleanup;
+	}
 
-	*length = 0;
 	if (read_data.length >= 6)
 	{
 		uint32 str_length = bytes2uint32(read_data.data + 2);
-		*length = str_length;
+		if (str_length > (uint32)(read_data.length - 6))
+		{
+			ret = CIP_ERROR_CODE_FAILED;
+			goto cleanup;
+		}
+
+		*length = (int)str_length;
 		int temp_size = str_length + 1;
 		char* ret_str = (char*)malloc(temp_size);
 		if (ret_str != NULL)
@@ -240,6 +256,8 @@ cip_error_code_e ab_cip_read_string(int fd, const char* address, int* length, ch
 			ret = CIP_ERROR_CODE_MALLOC_FAILED;
 		}
 	}
+
+	cleanup:
 	RELEASE_DATA(read_data.data);
 
 	return ret;
@@ -255,6 +273,8 @@ cip_error_code_e ab_cip_write_bool(int fd, const char* address, bool val)
 	byte_array_info write_data;
 	memset(&write_data, 0, sizeof(write_data));
 	write_data.data = (byte*)malloc(write_len);
+	if (write_data.data == NULL)
+		return CIP_ERROR_CODE_MALLOC_FAILED;
 	write_data.length = write_len;
 
 	if (val)
@@ -277,6 +297,8 @@ cip_error_code_e ab_cip_write_short(int fd, const char* address, short val)
 	byte_array_info write_data;
 	memset(&write_data, 0, sizeof(write_data));
 	write_data.data = (byte*)malloc(write_len);
+	if (write_data.data == NULL)
+		return CIP_ERROR_CODE_MALLOC_FAILED;
 	write_data.length = write_len;
 
 	short2bytes(val, write_data.data);
@@ -295,6 +317,8 @@ cip_error_code_e ab_cip_write_ushort(int fd, const char* address, ushort val)
 	byte_array_info write_data;
 	memset(&write_data, 0, sizeof(write_data));
 	write_data.data = (byte*)malloc(write_len);
+	if (write_data.data == NULL)
+		return CIP_ERROR_CODE_MALLOC_FAILED;
 	write_data.length = write_len;
 
 	ushort2bytes(val, write_data.data);
@@ -313,6 +337,8 @@ cip_error_code_e ab_cip_write_int32(int fd, const char* address, int32 val)
 	byte_array_info write_data;
 	memset(&write_data, 0, sizeof(write_data));
 	write_data.data = (byte*)malloc(write_len);
+	if (write_data.data == NULL)
+		return CIP_ERROR_CODE_MALLOC_FAILED;
 	write_data.length = write_len;
 
 	int2bytes(val, write_data.data);
@@ -331,6 +357,8 @@ cip_error_code_e ab_cip_write_uint32(int fd, const char* address, uint32 val)
 	byte_array_info write_data;
 	memset(&write_data, 0, sizeof(write_data));
 	write_data.data = (byte*)malloc(write_len);
+	if (write_data.data == NULL)
+		return CIP_ERROR_CODE_MALLOC_FAILED;
 	write_data.length = write_len;
 
 	uint2bytes(val, write_data.data);
@@ -359,19 +387,21 @@ cip_error_code_e ab_cip_write_int64(int fd, const char* address, int64 val)
 
 cip_error_code_e ab_cip_write_uint64(int fd, const char* address, uint64 val)
 {
-	cip_error_code_e ret = CIP_ERROR_CODE_FAILED;
-	if (fd > 0 && address != NULL)
-	{
-		int write_len = 8;
-		byte_array_info write_data;
-		memset(&write_data, 0, sizeof(write_data));
-		write_data.data = (byte*)malloc(write_len);
-		write_data.length = write_len;
+	if (fd <= 0 || address == NULL || strlen(address) == 0)
+		return CIP_ERROR_CODE_INVALID_PARAMETER;
 
-		ubigInt2bytes(val, write_data.data);
-		ret = write_value(fd, address, 1, CIP_Type_ULint, write_data);
-		RELEASE_DATA(write_data.data);
-	}
+	cip_error_code_e ret = CIP_ERROR_CODE_FAILED;
+	int write_len = 8;
+	byte_array_info write_data;
+	memset(&write_data, 0, sizeof(write_data));
+	write_data.data = (byte*)malloc(write_len);
+	if (write_data.data == NULL)
+		return CIP_ERROR_CODE_MALLOC_FAILED;
+	write_data.length = write_len;
+
+	ubigInt2bytes(val, write_data.data);
+	ret = write_value(fd, address, 1, CIP_Type_ULint, write_data);
+	RELEASE_DATA(write_data.data);
 	return ret;
 }
 
@@ -385,6 +415,8 @@ cip_error_code_e ab_cip_write_float(int fd, const char* address, float val)
 	byte_array_info write_data;
 	memset(&write_data, 0, sizeof(write_data));
 	write_data.data = (byte*)malloc(write_len);
+	if (write_data.data == NULL)
+		return CIP_ERROR_CODE_MALLOC_FAILED;
 	write_data.length = write_len;
 
 	float2bytes(val, write_data.data);
@@ -403,6 +435,8 @@ cip_error_code_e ab_cip_write_double(int fd, const char* address, double val)
 	byte_array_info write_data;
 	memset(&write_data, 0, sizeof(write_data));
 	write_data.data = (byte*)malloc(write_len);
+	if (write_data.data == NULL)
+		return CIP_ERROR_CODE_MALLOC_FAILED;
 	write_data.length = write_len;
 
 	double2bytes(val, write_data.data);

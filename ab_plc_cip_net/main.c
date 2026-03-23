@@ -26,9 +26,9 @@ int main(int argc, char** argv)
 	}
 #endif
 
-	char* plc_ip = "172.18.224.1";
+	char* plc_ip = "127.0.0.1";
 	int plc_port = 44818;
-	if (argc > 1)
+	if (argc > 2)
 	{
 		plc_ip = argv[1];
 		plc_port = atoi(argv[2]);

@@ -1,7 +1,6 @@
-/**
- * Return 0 if string origin starts with prefix.
- * Return 1 if not matched, and return -1 for invalid input.
- */
+/*
+ * SPDX-License-Identifier: MIT
+ * Copyright (c) 2022-2026 iceman (wqliceman@gmail.com)
  * GitHub: iceman
  * This file is part of ab_plc_cip_net.
  */
@@ -9,6 +8,7 @@
 #include "utill.h"
 #include <stdlib.h>
 #include <string.h>
+#include <ctype.h>
 
 #ifdef _WIN32
 #include <Windows.h>
@@ -134,27 +134,32 @@ uint64 bytes2ubigInt(byte* bytes)
 
 void float2bytes(float i, byte* bytes)
 {
-	int size = 4;
-	int temp = *(int*)&i;
+	int32 temp = 0;
+	memcpy(&temp, &i, sizeof(temp));
 	int2bytes(temp, bytes);
 }
 
 float bytes2float(byte* bytes)
 {
-	int temp = bytes2int32(bytes);
-	return *(float*)&temp;
+	int32 temp = bytes2int32(bytes);
+	float ret = 0.0f;
+	memcpy(&ret, &temp, sizeof(ret));
+	return ret;
 }
 
 void double2bytes(double i, byte* bytes)
 {
-	int64 temp = *(int64*)&i;
+	int64 temp = 0;
+	memcpy(&temp, &i, sizeof(temp));
 	bigInt2bytes(temp, bytes);
 }
 
 double bytes2double(byte* bytes)
 {
 	int64 temp = bytes2bigInt(bytes);
-	return *(double*)&temp;
+	double ret = 0.0;
+	memcpy(&ret, &temp, sizeof(ret));
+	return ret;
 }
 
 int str_to_int(const char* address)
@@ -169,7 +174,7 @@ void str_toupper(char* input)
 	if (input == NULL)
 		return;
 
-	int32 len = strlen(input), i = 0;
+	size_t len = strlen(input), i = 0;
 	for (; i < len; i++)
 		input[i] = toupper(input[i]);
 }
@@ -179,7 +184,7 @@ void str_tolower(char* input)
 	if (input == NULL)
 		return;
 
-	int32 len = strlen(input), i = 0;
+	size_t len = strlen(input), i = 0;
 	for (; i < len; i++)
 		input[i] = tolower(input[i]);
 }
@@ -197,7 +202,7 @@ int str_start_with(const char* origin, char* prefix)
 		return -1;
 	}
 
-	int n = strlen(prefix), i;
+	size_t n = strlen(prefix), i;
 	for (i = 0; i < n; i++)
 	{
 		if (origin[i] != prefix[i])
@@ -221,8 +226,8 @@ int str_end_with(const char* origin, char* end)
 		return -1;
 	}
 
-	int n = strlen(end);
-	int m = strlen(origin);
+	size_t n = strlen(end);
+	size_t m = strlen(origin);
 	int i;
 	for (i = 0; i < n; i++)
 	{
@@ -244,7 +249,7 @@ uint32 htonf_(float value)
 float ntohf_(uint32 value)
 {
 	const uint32 Tempval = _WS2_32_WINSOCK_SWAP_LONG(value);
-	float Retval;
+	float Retval = 0.0;
 	*((uint32*)&Retval) = Tempval;
 	return Retval;
 }
@@ -261,7 +266,7 @@ uint64 htond_(double value)
 double ntohd_(uint64 value)
 {
 	const uint64 Tempval = _WS2_32_WINSOCK_SWAP_LONGLONG(value);
-	double Retval;
+	double Retval = 0.0;
 	*((uint64*)&Retval) = Tempval;
 	return Retval;
 }

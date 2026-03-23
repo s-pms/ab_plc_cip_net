@@ -1,6 +1,6 @@
 export BUILD_ROOT = $(shell pwd)
 
-export INCLUDE_PATH = $(BUILD_ROOT)/include
+export INCLUDE_PATH = $(BUILD_ROOT)/ab_plc_cip_net
 
 BUILD_DIR = $(BUILD_ROOT)/ab_plc_cip_net/
 

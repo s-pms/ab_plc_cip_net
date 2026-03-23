@@ -22,6 +22,16 @@
 #include <unistd.h>
 #endif
 
+static int socket_is_interrupted_error(void)
+{
+#ifdef _WIN32
+	int err = WSAGetLastError();
+	return (err == WSAEINTR);
+#else
+	return (errno == EINTR);
+#endif
+}
+
 int socket_send_data(int fd, void* buf, int nbytes)
 {
 	int nleft, nwritten;
@@ -36,7 +46,7 @@ int socket_send_data(int fd, void* buf, int nbytes)
 		nwritten = send(fd, ptr, nleft, 0);
 		if (nwritten <= 0)
 		{
-			if (errno == EINTR)
+			if (socket_is_interrupted_error())
 				continue;
 			else
 				return -1;
@@ -69,7 +79,7 @@ int socket_recv_data(int fd, void* buf, int nbytes)
 		}
 		else if (nread < 0)
 		{
-			if (errno == EINTR)
+			if (socket_is_interrupted_error())
 				continue;
 			else
 				return -1;
@@ -102,7 +112,7 @@ int socket_recv_data_one_loop(int fd, void* buf, int nbytes)
 		}
 		else if (nread < 0)
 		{
-			if (errno == EINTR)
+			if (socket_is_interrupted_error())
 				continue;
 			else
 				return -1;
@@ -131,12 +141,23 @@ int socket_open_tcp_client_socket(char* destIp, short destPort)
 	if (sockFd < 0)
 	{
 		return -1;
-#pragma warning(disable : 4996)
 	}
 
 	memset((char*)&serverAddr, 0, sizeof(serverAddr));
 	serverAddr.sin_family = AF_INET;
-	serverAddr.sin_addr.s_addr = inet_addr(destIp);
+	#ifdef _WIN32
+	if (InetPtonA(AF_INET, destIp, &serverAddr.sin_addr) != 1)
+	{
+		socket_close_tcp_socket(sockFd);
+		return -1;
+	}
+	#else
+	if (inet_pton(AF_INET, destIp, &serverAddr.sin_addr) != 1)
+	{
+		socket_close_tcp_socket(sockFd);
+		return -1;
+	}
+	#endif
 	serverAddr.sin_port = (uint16_t)htons((uint16_t)destPort);
 
 	ret = connect(sockFd, (struct sockaddr*)&serverAddr, sizeof(serverAddr));
@@ -144,7 +165,7 @@ int socket_open_tcp_client_socket(char* destIp, short destPort)
 	if (ret != 0)
 	{
 		socket_close_tcp_socket(sockFd);
-		sockFd = -1;
+		return -1;
 	}
 
 #ifdef _WIN32
@@ -162,7 +183,7 @@ int socket_open_tcp_client_socket(char* destIp, short destPort)
 
 void socket_close_tcp_socket(int sockFd)
 {
-	if (sockFd > 0)
+	if (sockFd >= 0)
 	{
 #ifdef _WIN32
 		closesocket(sockFd);

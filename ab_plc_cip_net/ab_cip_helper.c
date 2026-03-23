@@ -308,7 +308,7 @@ bool cip_read_response(int fd, byte_array_info* response)
 	int content_size = 0;
 
 	if (fd < 0)
-		return -1;
+		return false;
 
 	byte* content = NULL;
 	byte head[HEAD_SIZE];
@@ -320,9 +320,14 @@ bool cip_read_response(int fd, byte_array_info* response)
 		if (content_size > 0)
 		{
 			content = (byte*)malloc(content_size);
+			if (content == NULL)
+				return false;
 			memset(content, 0, content_size);
 		}
-		recv_size = socket_recv_data(fd, content, content_size);
+
+		recv_size = 0;
+		if (content_size > 0)
+			recv_size = socket_recv_data(fd, content, content_size);
 		if (recv_size == content_size)
 		{
 			response->length = HEAD_SIZE + content_size;
@@ -331,7 +336,8 @@ bool cip_read_response(int fd, byte_array_info* response)
 			{
 				memset(response->data, 0, response->length);
 				memcpy(response->data, head, HEAD_SIZE);
-				memcpy(response->data + HEAD_SIZE, content, content_size);
+				if (content_size > 0)
+					memcpy(response->data + HEAD_SIZE, content, content_size);
 
 				is_ok = true;
 			}
