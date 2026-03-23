@@ -1,3 +1,10 @@
+/*
+ * SPDX-License-Identifier: MIT
+ * Copyright (c) 2022-2026 iceman (wqliceman@gmail.com)
+ * GitHub: iceman
+ * This file is part of ab_plc_cip_net.
+ */
+
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -8,7 +15,7 @@ extern uint32 g_session;
 extern byte g_plc_slot;
 extern byte g_registered_command[28];
 
-// 从地址构造核心报文
+// Build the core read command from a tag address.
 byte_array_info build_read_core_command(const char* address, int length)
 {
 	size_t addr_length = strlen(address);
@@ -27,45 +34,45 @@ byte_array_info build_read_core_command(const char* address, int length)
 			memset(temp_address, 0, addr_adjust_length);
 			memcpy(temp_address, address, strlen(address));
 
-			command[0] = 0x6F; // 命令
+			command[0] = 0x6F; // Command
 			command[2] = (byte)((command_len - 24) % 256);
-			command[3] = (byte)((command_len - 24) / 256); // 长度
+			command[3] = (byte)((command_len - 24) / 256); // Length
 
 			char temp_session[4] = { 0 };
 			uint2bytes(g_session, temp_session);
 			command[4] = temp_session[0];
 			command[5] = temp_session[1];
 			command[6] = temp_session[2];
-			command[7] = temp_session[3]; // 会话句柄
+			command[7] = temp_session[3]; // Session handle
 
 			command[0 + 24] = 0x00;
 			command[1 + 24] = 0x00;
 			command[2 + 24] = 0x00;
-			command[3 + 24] = 0x00;	// 接口句柄，默认为0x00000000（CIP）
+			command[3 + 24] = 0x00;	// Interface handle, default 0x00000000 (CIP)
 			command[4 + 24] = 0x01;
-			command[5 + 24] = 0x0A; // 超时（0x000A）
+			command[5 + 24] = 0x0A; // Timeout (0x000A)
 			command[6 + 24] = 0x02;
-			command[7 + 24] = 0x00; // 项数（0x0002）
+			command[7 + 24] = 0x00; // Item count (0x0002)
 			command[8 + 24] = 0x00;
-			command[9 + 24] = 0x00; // 空地址项（0x0000）
+			command[9 + 24] = 0x00; // Address item (0x0000)
 			command[10 + 24] = 0x00;
-			command[11 + 24] = 0x00; // 长度（0x0000）
+			command[11 + 24] = 0x00; // Address length (0x0000)
 			command[12 + 24] = 0xB2; // type id   0xB2:UnConnected Data Item  0xB1:Connected Data Item  0xA1:Connect Address Item
-			command[13 + 24] = 0x00; // 未连接数据项（0x00b2）
-			command[14 + 24] = (byte)((command_len - 16 - 24) % 256); // 后面数据包的长度，等全部生成后在赋值
+			command[13 + 24] = 0x00; // Unconnected data item type low byte (0x00B2)
+			command[14 + 24] = (byte)((command_len - 16 - 24) % 256); // Following payload length (filled after build)
 			command[15 + 24] = (byte)((command_len - 16 - 24) / 256);
-			command[16 + 24] = 0x52; // 服务类型（0x03请求服务列表，0x52请求标签数据）
-			command[17 + 24] = 0x02; // 请求路径大小
+			command[16 + 24] = 0x52; // Service type
+			command[17 + 24] = 0x02; // Request path size
 			command[18 + 24] = 0x20;
-			command[19 + 24] = 0x06; // 请求路径(0x0620)
+			command[19 + 24] = 0x06; // Request path (0x0620)
 			command[20 + 24] = 0x24;
-			command[21 + 24] = 0x01; // 请求路径(0x0124)
+			command[21 + 24] = 0x01; // Request path (0x0124)
 			command[22 + 24] = 0x0A;
 			command[23 + 24] = 0xF0;
-			command[24 + 24] = (byte)((6 + addr_adjust_length) % 256); // CIP指令长度
+			command[24 + 24] = (byte)((6 + addr_adjust_length) % 256); // CIP payload length
 			command[25 + 24] = (byte)((6 + addr_adjust_length) / 256);
 
-			command[0 + 24 + 26] = 0x4C; // 读取数据
+			command[0 + 24 + 26] = 0x4C; // Read service code
 			command[1 + 24 + 26] = (byte)((addr_adjust_length + 2) / 2);
 			command[2 + 24 + 26] = 0x91;
 			command[3 + 24 + 26] = (byte)addr_length;
@@ -112,45 +119,45 @@ byte_array_info build_write_core_command(const char* address, ushort typeCode, i
 			memset(temp_address, 0, addr_adjust_length);
 			memcpy(temp_address, address, strlen(address));
 
-			command[0] = 0x6F; // 命令
+			command[0] = 0x6F; // Command
 			command[2] = (byte)((command_len - 24) % 256);
-			command[3] = (byte)((command_len - 24) / 256); // 长度
+			command[3] = (byte)((command_len - 24) / 256); // Length
 
 			char temp_session[4] = { 0 };
 			uint2bytes(g_session, temp_session);
 			command[4] = temp_session[0];
 			command[5] = temp_session[1];
 			command[6] = temp_session[2];
-			command[7] = temp_session[3]; // 会话句柄
+			command[7] = temp_session[3]; // Session handle
 
 			command[0 + 24] = 0x00;
 			command[1 + 24] = 0x00;
 			command[2 + 24] = 0x00;
-			command[3 + 24] = 0x00; // 接口句柄，默认为0x00000000（CIP）
+			command[3 + 24] = 0x00; // Interface handle, default 0x00000000 (CIP)
 			command[4 + 24] = 0x01;
-			command[5 + 24] = 0x0A; // 超时（0x0001）
+			command[5 + 24] = 0x0A; // Timeout
 			command[6 + 24] = 0x02;
-			command[7 + 24] = 0x00; // 项数（0x0002）
+			command[7 + 24] = 0x00; // Item count (0x0002)
 			command[8 + 24] = 0x00;
 			command[9 + 24] = 0x00;
 			command[10 + 24] = 0x00;
-			command[11 + 24] = 0x00; // 空地址项（0x0000）
+			command[11 + 24] = 0x00; // Address item length (0x0000)
 			command[12 + 24] = 0xB2;
-			command[13 + 24] = 0x00; // 未连接数据项（0x00b2）
-			command[14 + 24] = (byte)((command_len - 16 - 24) % 256); // 后面数据包的长度，等全部生成后在赋值
+			command[13 + 24] = 0x00; // Unconnected data item type low byte (0x00B2)
+			command[14 + 24] = (byte)((command_len - 16 - 24) % 256); // Following payload length (filled after build)
 			command[15 + 24] = (byte)((command_len - 16 - 24) / 256);
-			command[16 + 24] = 0x52; // 服务类型（0x03请求服务列表，0x52请求标签数据）
-			command[17 + 24] = 0x02; // 请求路径大小
+			command[16 + 24] = 0x52; // Service type
+			command[17 + 24] = 0x02; // Request path size
 			command[18 + 24] = 0x20;
-			command[19 + 24] = 0x06; // 请求路径(0x0620)
+			command[19 + 24] = 0x06; // Request path (0x0620)
 			command[20 + 24] = 0x24;
-			command[21 + 24] = 0x01; // 请求路径(0x0124)
+			command[21 + 24] = 0x01; // Request path (0x0124)
 			command[22 + 24] = 0x0A;
 			command[23 + 24] = 0xF0;
-			command[24 + 24] = (byte)((8 + val_len + addr_adjust_length) % 256); // CIP指令长度
+			command[24 + 24] = (byte)((8 + val_len + addr_adjust_length) % 256); // CIP payload length
 			command[25 + 24] = (byte)((8 + val_len + addr_adjust_length) / 256);
 
-			command[0 + 26 + 24] = 0x4D; // 写数据
+			command[0 + 26 + 24] = 0x4D; // Write service code
 			command[1 + 26 + 24] = (byte)((addr_adjust_length + 2) / 2);
 			command[2 + 26 + 24] = 0x91;
 			command[3 + 26 + 24] = (byte)addr_length;
@@ -223,8 +230,8 @@ cip_error_code_e cip_analysis_write_byte(byte_array_info response)
 }
 
 /// <summary>
-/// 读取数据
-/// 长度(length)默认为：1
+/// Read a value from PLC by tag address.
+/// The default read length is 1.
 /// </summary>
 /// <param name="fd"></param>
 /// <param name="address"></param>

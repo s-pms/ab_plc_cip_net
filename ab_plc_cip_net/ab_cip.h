@@ -1,3 +1,10 @@
+/*
+ * SPDX-License-Identifier: MIT
+ * Copyright (c) 2022-2026 iceman (wqliceman@gmail.com)
+ * GitHub: iceman
+ * This file is part of ab_plc_cip_net.
+ */
+
 #ifndef __H_AB_CIP_H__
 #define __H_AB_CIP_H__
 

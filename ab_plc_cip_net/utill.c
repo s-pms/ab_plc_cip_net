@@ -1,3 +1,11 @@
+/**
+ * Return 0 if string origin starts with prefix.
+ * Return 1 if not matched, and return -1 for invalid input.
+ */
+ * GitHub: iceman
+ * This file is part of ab_plc_cip_net.
+ */
+
 #include "utill.h"
 #include <stdlib.h>
 #include <string.h>
@@ -177,7 +185,8 @@ void str_tolower(char* input)
 }
 
 /**
- * ×字符串origin以字符串prefix开头，返回0；否则返回1；异常返回-1
+ * Return 0 if string origin starts with prefix.
+ * Return 1 if not matched, and return -1 for invalid input.
  */
 int str_start_with(const char* origin, char* prefix)
 {
@@ -200,7 +209,8 @@ int str_start_with(const char* origin, char* prefix)
 }
 
 /**
- * 字符串origin以字符串end结尾，返回0；否则返回1；异常返回-1
+ * Return 0 if string origin ends with end.
+ * Return 1 if not matched, and return -1 for invalid input.
  */
 int str_end_with(const char* origin, char* end)
 {

@@ -1,3 +1,10 @@
+/*
+ * SPDX-License-Identifier: MIT
+ * Copyright (c) 2022-2026 iceman (wqliceman@gmail.com)
+ * GitHub: iceman
+ * This file is part of ab_plc_cip_net.
+ */
+
 #ifdef _WIN32
 #include <WinSock2.h>
 #endif

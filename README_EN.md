@@ -1,4 +1,12 @@
 ## Project Overview
+
+## Copyright and Author
+
+- License: MIT (see [LICENSE](LICENSE))
+- GitHub: iceman
+- Email: wqliceman@gmail.com
+- Copyright (c) 2022-2026 iceman
+
 - Project Name: ab_plc_cip_net
 - Development Language: C
 - Supported Operating Systems: Windows, Linux

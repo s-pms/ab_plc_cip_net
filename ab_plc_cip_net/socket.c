@@ -1,3 +1,10 @@
+/*
+ * SPDX-License-Identifier: MIT
+ * Copyright (c) 2022-2026 iceman (wqliceman@gmail.com)
+ * GitHub: iceman
+ * This file is part of ab_plc_cip_net.
+ */
+
 #include "socket.h"
 #include <stdio.h>
 #include <string.h>
@@ -105,7 +112,7 @@ int socket_recv_data_one_loop(int fd, void* buf, int nbytes)
 			nleft -= nread;
 			ptr += nread;
 
-			// 目前只接收一次
+				// Currently only receive once.
 			break;
 		}
 	}

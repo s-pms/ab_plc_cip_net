@@ -1,3 +1,10 @@
+/*
+ * SPDX-License-Identifier: MIT
+ * Copyright (c) 2022-2026 iceman (wqliceman@gmail.com)
+ * GitHub: iceman
+ * This file is part of ab_plc_cip_net.
+ */
+
 #ifndef __UTILL_H__
 #define __UTILL_H__
 
@@ -7,16 +14,16 @@
 
 typedef struct _tag_byte_array_info
 {
-	byte* data;		// 内容
-	int length;		// 长度
-	cip_type_e type;// 数据类型
+	byte* data;		// Data buffer
+	int length;		// Data length
+	cip_type_e type;// CIP data type
 } byte_array_info;
 
 typedef struct _tag_bool_array_info
 {
-	bool* data;		// 内容
-	int length;		// 长度
-	cip_type_e type;// 数据类型
+	bool* data;		// Data buffer
+	int length;		// Data length
+	cip_type_e type;// CIP data type
 } bool_array_info;
 
 void short2bytes(short i, byte* bytes);
