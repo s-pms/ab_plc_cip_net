@@ -71,6 +71,37 @@ cip_error_code_e ab_cip_write_string(int fd, const char* address, int length, co
 
 ## Usage Example
 
+## Build with Makefiles
+
+This repository contains a two-level Makefile layout:
+
+- Top-level [makefile](makefile): enters each directory listed in `BUILD_DIR`.
+- Build config [config.mk](config.mk): defines build root, include path, targets, and build mode flags.
+- Shared rules [common.mk](common.mk): compiles `.c` files, generates `.d` dependency files, and links the final output.
+- Module makefile [ab_plc_cip_net/makefile](ab_plc_cip_net/makefile): sets `BIN` (`ab_cip_test`) and imports shared rules.
+
+### Linux / WSL
+
+From repository root:
+
+```bash
+make
+make clean
+```
+
+### Build options
+
+Edit [config.mk](config.mk):
+
+- `DEBUG=true` enables `-g` debug symbols.
+- `DEBUG=false` builds in release mode.
+- `BUILD_SO=true` builds a shared library (`.so`) instead of an executable.
+
+### Notes for Windows
+
+- The Makefile flow assumes GNU Make (`make`) is available (for example through WSL or MSYS2).
+- If you build with Visual Studio, use [ab_plc_cip_net/ab_plc_cip_net.sln](ab_plc_cip_net/ab_plc_cip_net.sln) instead.
+
 Refer to the main.c file in the code for the complete example. Below are the main code segments and usage instructions:
 
 Reading addresses follows the format "F" or "D".

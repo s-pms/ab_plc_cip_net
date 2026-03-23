@@ -1,13 +1,11 @@
 
 include config.mk
+
+.PHONY: all clean
+
 all:
-#-C是指定目录
-#make -C signal   
-
-#可执行文件应该放最后
-#make -C app      
-
-#用shell命令for搞，shell里边的变量用两个$
+	# Build each subdirectory listed in BUILD_DIR.
+	# Use $$ for shell variables inside make recipes.
 	@for dir in $(BUILD_DIR); \
 	do \
 		make -C $$dir; \
@@ -15,7 +13,7 @@ all:
 
 
 clean:
-#-rf：删除文件夹，强制删除
+	# Remove generated artifacts from all known build locations.
 	rm -rf app/link_obj app/dep nginx
 	rm -rf signal/*.gch app/*.gch
 
