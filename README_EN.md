@@ -108,7 +108,35 @@ Additional targets:
 make lib
 make shared
 make example
+make install
+make package
+make publish
+make install-shared
 make DEBUG=false
+```
+
+`make install` exports a standard distribution layout under `dist/<debug|release>/`:
+
+```text
+dist/debug/
+    include/
+        ab_cip.h
+        typedef.h
+    lib/
+        libab_plc_cip_net.a
+    bin/
+        ab_cip_test           # when the sample app has been built
+    share/doc/ab_plc_cip_net/
+        LICENSE
+        README.md
+        README_EN.md
+```
+
+To stage the package somewhere else, override `PREFIX`:
+
+```bash
+make install PREFIX=/tmp/ab_plc_cip_net
+make install-shared PREFIX=/tmp/ab_plc_cip_net-shared
 ```
 
 ### Notes for Windows

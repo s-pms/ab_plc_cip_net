@@ -112,8 +112,36 @@ make
 make lib                 # 仅构建静态库
 make shared              # 构建共享库 libab_plc_cip_net.so
 make example             # 构建并链接示例程序
+make install             # 导出标准分发结构到 dist/<debug|release>/
+make package             # install 的别名
+make publish             # install 的别名
+make install-shared      # 导出共享库分发结构
 make clean               # 清理所有 artifacts
 make DEBUG=false         # 以 release 模式构建默认目标
+```
+
+`make install` 默认会导出如下结构：
+
+```text
+dist/debug/
+    include/
+        ab_cip.h
+        typedef.h
+    lib/
+        libab_plc_cip_net.a
+    bin/
+        ab_cip_test           # 若示例已构建
+    share/doc/ab_plc_cip_net/
+        LICENSE
+        README.md
+        README_EN.md
+```
+
+如果需要导出到自定义目录，可覆盖 `PREFIX`，例如：
+
+```bash
+make install PREFIX=/tmp/ab_plc_cip_net
+make install-shared PREFIX=/tmp/ab_plc_cip_net-shared
 ```
 
 ### 使用 Visual Studio 构建

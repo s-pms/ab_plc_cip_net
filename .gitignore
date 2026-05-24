@@ -98,6 +98,10 @@ StyleCopReport.xml
 *.svclog
 *.scc
 
+# Project packaging artifacts
+artifacts/
+dist/
+
 # Chutzpah Test files
 _Chutzpah*
 
