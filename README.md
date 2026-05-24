@@ -17,6 +17,19 @@
 本项目实现了基于 CIP（EtherNet/IP）协议的罗克韦尔 AB-PLC 通讯能力。
 使用前请先在 PLC 侧正确配置以太网模块。
 
+## 架构概览
+
+```mermaid
+flowchart LR
+    App["用户应用 / examples/ab_cip_test.c"] --> API["公开接口\nab_cip.h + typedef.h"]
+    API --> Core["核心 API 实现\nab_cip.c"]
+    Core --> Helper["协议组包与响应解析\nab_cip_helper.c"]
+    Core --> State["会话与槽位状态\nab_cip_private.h"]
+    Helper --> Transport["TCP 传输层\nsocket.c"]
+    Helper --> Utils["字节转换与通用工具\nutill.c"]
+    Transport --> PLC["AB PLC / EtherNet-IP"]
+```
+
 ## 头文件
 
 ```c
@@ -92,6 +105,19 @@ if (ok && fd > 0) {
 
 - 核心库：`ab_plc_cip_net`
 - 示例程序：`ab_cip_test`
+
+### 构建与发布流程
+
+```mermaid
+flowchart LR
+    Make["make / make shared"] --> LibArtifacts["库产物\nartifacts/<flavor>/lib"]
+    Make --> BinArtifacts["示例产物\nartifacts/<flavor>/bin"]
+    Headers["公开头文件\nab_cip.h + typedef.h"] --> Install["make install / package / publish"]
+    LibArtifacts --> Install
+    BinArtifacts --> Install
+    Install --> Dist["标准分发目录\ndist/<flavor>/include\ndist/<flavor>/lib\ndist/<flavor>/bin\ndist/<flavor>/share/doc"]
+    Shared["make install-shared"] --> Dist
+```
 
 ### 使用 Make 构建
 

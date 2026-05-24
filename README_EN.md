@@ -14,6 +14,19 @@
 
 The current implementation provides a Rockwell AB-PLC communication class utilizing the CIP (EtherNet/IP) protocol. Prior to usage, the Ethernet module on the PLC side must be configured accordingly.
 
+## Architecture Overview
+
+```mermaid
+flowchart LR
+    App["Consumer App / examples/ab_cip_test.c"] --> API["Public Surface\nab_cip.h + typedef.h"]
+    API --> Core["Core API Implementation\nab_cip.c"]
+    Core --> Helper["Packet Build + Response Parsing\nab_cip_helper.c"]
+    Core --> State["Session + PLC Slot State\nab_cip_private.h"]
+    Helper --> Transport["TCP Transport\nsocket.c"]
+    Helper --> Utils["Byte Conversion + Utilities\nutill.c"]
+    Transport --> PLC["AB PLC / EtherNet-IP"]
+```
+
 #### Header Files
 ```c
 #include "ab_cip.h"  // Provides protocol method interfaces
@@ -79,6 +92,19 @@ This repository contains a two-level Makefile layout:
 - Shared rules [common.mk](common.mk): builds a static/shared library or executable from explicit source lists.
 - Library makefile [ab_plc_cip_net/makefile](ab_plc_cip_net/makefile): builds the core `ab_plc_cip_net` target.
 - Example makefile [examples/makefile](examples/makefile): links `ab_cip_test` against the generated library.
+
+### Build and Publish Flow
+
+```mermaid
+flowchart LR
+    Make["make / make shared"] --> LibArtifacts["Library Artifacts\nartifacts/<flavor>/lib"]
+    Make --> BinArtifacts["Sample Artifacts\nartifacts/<flavor>/bin"]
+    Headers["Public Headers\nab_cip.h + typedef.h"] --> Install["make install / package / publish"]
+    LibArtifacts --> Install
+    BinArtifacts --> Install
+    Install --> Dist["Distribution Layout\ndist/<flavor>/include\ndist/<flavor>/lib\ndist/<flavor>/bin\ndist/<flavor>/share/doc"]
+    Shared["make install-shared"] --> Dist
+```
 
 ### Linux / WSL
 
