@@ -1,0 +1,28 @@
+{
+  "configurations": [
+    {
+      "name": "Windows",
+      "includePath": [
+        "${workspaceFolder}/ab_plc_cip_net",
+        "${workspaceFolder}/examples"
+      ],
+      "defines": [
+        "_DEBUG",
+        "_CRT_SECURE_NO_WARNINGS",
+        "_WINSOCK_SECURE_NO_WARNINGS"
+      ],
+      "cStandard": "c11",
+      "intelliSenseMode": "windows-msvc-x64"
+    },
+    {
+      "name": "Linux",
+      "includePath": [
+        "${workspaceFolder}/ab_plc_cip_net",
+        "${workspaceFolder}/examples"
+      ],
+      "cStandard": "c11",
+      "intelliSenseMode": "linux-gcc-x64"
+    }
+  ],
+  "version": 4
+}

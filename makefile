@@ -3,17 +3,22 @@ include config.mk
 
 .PHONY: all clean
 
-all:
-	# Build each subdirectory listed in BUILD_DIR.
-	# Use $$ for shell variables inside make recipes.
-	@for dir in $(BUILD_DIR); \
-	do \
-		make -C $$dir; \
-	done
+.PHONY: lib shared example
+
+all: lib example
+
+lib:
+	$(MAKE) -C $(LIB_MODULE_DIR)
+
+shared:
+	$(MAKE) -C $(LIB_MODULE_DIR) BUILD_SHARED=true
+
+example: lib
+	$(MAKE) -C $(EXAMPLE_MODULE_DIR)
 
 
 clean:
-	# Remove generated artifacts from all known build locations.
-	rm -rf app/link_obj app/dep nginx
-	rm -rf signal/*.gch app/*.gch
+	$(MAKE) -C $(LIB_MODULE_DIR) clean
+	$(MAKE) -C $(EXAMPLE_MODULE_DIR) clean
+	rm -rf $(ARTIFACT_ROOT_BASE)
 

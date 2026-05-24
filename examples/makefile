@@ -1,0 +1,13 @@
+include ../config.mk
+
+TARGET = $(EXAMPLE_NAME)
+TARGET_TYPE = executable
+SRCS = ab_cip_test.c
+INCLUDE_DIRS = $(INCLUDE_PATH)
+TARGET_PREREQS = $(STATIC_LIBRARY)
+TARGET_LINK_INPUTS = $(STATIC_LIBRARY)
+
+$(STATIC_LIBRARY):
+	$(MAKE) -C $(LIB_MODULE_DIR)
+
+include ../common.mk

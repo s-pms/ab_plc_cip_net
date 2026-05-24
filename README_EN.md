@@ -74,10 +74,11 @@ cip_error_code_e ab_cip_write_string(int fd, const char* address, int length, co
 
 This repository contains a two-level Makefile layout:
 
-- Top-level [makefile](makefile): enters each directory listed in `BUILD_DIR`.
-- Build config [config.mk](config.mk): defines build root, include path, targets, and build mode flags.
-- Shared rules [common.mk](common.mk): compiles `.c` files, generates `.d` dependency files, and links the final output.
-- Module makefile [ab_plc_cip_net/makefile](ab_plc_cip_net/makefile): sets `BIN` (`ab_cip_test`) and imports shared rules.
+- Core library example source: [examples/ab_cip_test.c](examples/ab_cip_test.c)
+- Build config [config.mk](config.mk): defines artifact locations, target names, and build mode flags.
+- Shared rules [common.mk](common.mk): builds a static/shared library or executable from explicit source lists.
+- Library makefile [ab_plc_cip_net/makefile](ab_plc_cip_net/makefile): builds the core `ab_plc_cip_net` target.
+- Example makefile [examples/makefile](examples/makefile): links `ab_cip_test` against the generated library.
 
 ### Linux / WSL
 
@@ -88,209 +89,46 @@ make
 make clean
 ```
 
+The default `make` target builds the static library first and then links the example binary. Artifacts are written to:
+
+- `artifacts/debug/lib/libab_plc_cip_net.a`
+- `artifacts/debug/bin/ab_cip_test`
+
 ### Build options
 
 Edit [config.mk](config.mk):
 
 - `DEBUG=true` enables `-g` debug symbols.
 - `DEBUG=false` builds in release mode.
-- `BUILD_SO=true` builds a shared library (`.so`) instead of an executable.
+- `BUILD_SHARED=true` switches the library makefile from static output to shared output.
+
+Additional targets:
+
+```bash
+make lib
+make shared
+make example
+make DEBUG=false
+```
 
 ### Notes for Windows
 
 - The Makefile flow assumes GNU Make (`make`) is available (for example through WSL or MSYS2).
-- If you build with Visual Studio, use [ab_plc_cip_net/ab_plc_cip_net.sln](ab_plc_cip_net/ab_plc_cip_net.sln) instead.
+- If you build with Visual Studio, use [ab_plc_cip_net/ab_plc_cip_net.sln](ab_plc_cip_net/ab_plc_cip_net.sln) instead. The solution now contains a library project and a separate example application project.
 
-Refer to the main.c file in the code for the complete example. Below are the main code segments and usage instructions:
+## Example Program
+
+Refer to [examples/ab_cip_test.c](examples/ab_cip_test.c) for the complete sample application. The example is now intentionally separate from the core library target so downstream users can link the library without pulling in demo code.
 
 Reading addresses follows the format "F" or "D".
 
 ```c
-#ifdef _WIN32
-#include <WinSock2.h>
-#endif
-#include <stdio.h>
-#include <stdlib.h>
-#pragma warning(disable : 4996)
-
-#define GET_RESULT(ret) { if (ret != 0) failed_count++;}
-
 #include "ab_cip.h"
 
-int main(int argc, char** argv)
-{
-#ifdef _WIN32
- WSADATA wsa;
- if (WSAStartup(MAKEWORD(2, 2), &wsa) != 0)
- {
-  return -1;
- }
-#endif
-
- char* plc_ip = "127.0.0.1";
- int plc_port = 44818;
- if (argc > 1)
- {
-  plc_ip = argv[1];
-  plc_port = atoi(argv[2]);
- }
-
- int fd = -1;
- int slot = 0;
- bool ret = ab_cip_connect(plc_ip, plc_port, 0, &fd);
- if (ret && fd > 0)
- {
-  cip_error_code_e ret = CIP_ERROR_CODE_FAILED;
-
-  const int TEST_COUNT = 5000;
-  const int TEST_SLEEP_TIME = 1000;
-  int failed_count = 0;
-  char address[50] = { 0 };
-  int i = 0;
-
-  for (i = 0; i < TEST_COUNT; i++)
-  {
-   printf("==============Test count: %d==============\n", i + 1);
-   bool all_success = false;
-   //////////////////////////////////////////////////////////////////////////
-   bool val = true;
-   strcpy(address, "E");
-   ret = ab_cip_write_bool(fd, address, val);
-   printf("Write\t %s \tbool:\t %d, \tret: %d\n", address, val, ret);
-   GET_RESULT(ret);
-
-   val = false;
-   ret = ab_cip_read_bool(fd, address, &val);
-   printf("Read\t %s \tbool:\t %d\n", address, val);
-   GET_RESULT(ret);
-
-   //////////////////////////////////////////////////////////////////////////
-   short w_s_val = 23;
-   strcpy(address, "A");
-   ret = ab_cip_write_short(fd, address, w_s_val);
-   printf("Write\t %s \tshort:\t %d, \tret: %d\n", address, w_s_val, ret);
-   GET_RESULT(ret);
-
-   short s_val = 0;
-   ret = ab_cip_read_short(fd, address, &s_val);
-   printf("Read\t %s \tshort:\t %d\n", address, s_val);
-   GET_RESULT(ret);
-
-   //////////////////////////////////////////////////////////////////////////
-   ushort w_us_val = 255;
-   strcpy(address, "A");
-   ret = ab_cip_write_ushort(fd, address, w_us_val);
-   printf("Write\t %s \tushort:\t %d, \tret: %d\n", address, w_us_val, ret);
-   GET_RESULT(ret);
-
-   ushort us_val = 0;
-   ret = ab_cip_read_ushort(fd, address, &us_val);
-   printf("Read\t %s \tushort:\t %d\n", address, us_val);
-   GET_RESULT(ret);
-
-   //////////////////////////////////////////////////////////////////////////
-   int32 w_i_val = 12345;
-   strcpy(address, "B");
-   ret = ab_cip_write_int32(fd, address, w_i_val);
-   printf("Write\t %s \tint32:\t %d, \tret: %d\n", address, w_i_val, ret);
-   GET_RESULT(ret);
-
-   int i_val = 0;
-   ret = ab_cip_read_int32(fd, address, &i_val);
-   printf("Read\t %s \tint32:\t %d\n", address, i_val);
-   GET_RESULT(ret);
-
-   //////////////////////////////////////////////////////////////////////////
-   uint32 w_ui_val = 22345;
-   ret = ab_cip_write_uint32(fd, address, w_ui_val);
-   printf("Write\t %s \tuint32:\t %d, \tret: %d\n", address, w_ui_val, ret);
-   GET_RESULT(ret);
-
-   uint32 ui_val = 0;
-   ret = ab_cip_read_uint32(fd, address, &ui_val);
-   printf("Read\t %s \tuint32:\t %d\n", address, ui_val);
-   GET_RESULT(ret);
-
-   //////////////////////////////////////////////////////////////////////////
-#if true
-   int64 w_i64_val = 333334554;
-   strcpy(address, "N");
-   ret = ab_cip_write_int64(fd, address, w_i64_val);
-   printf("Write\t %s \tuint64:\t %lld, \tret: %d\n", address, w_i64_val, ret);
-   GET_RESULT(ret);
-
-   int64 i64_val = 0;
-   ret = ab_cip_read_int64(fd, address, &i64_val);
-   printf("Read\t %s \tint64:\t %lld\n", address, i64_val);
-   GET_RESULT(ret);
-
-#endif
-   //////////////////////////////////////////////////////////////////////////
-   uint64 w_ui64_val = 4333334554;
-   strcpy(address, "N");
-   ret = ab_cip_write_uint64(fd, address, w_ui64_val);
-   printf("Write\t %s \tuint64:\t %lld, \tret: %d\n", address, w_ui64_val, ret);
-   GET_RESULT(ret);
-
-   int64 ui64_val = 0;
-   ret = ab_cip_read_uint64(fd, address, &ui64_val);
-   printf("Read\t %s \tuint64:\t %lld\n", address, ui64_val);
-   GET_RESULT(ret);
-
-   //////////////////////////////////////////////////////////////////////////
-   float w_f_val = 32.454f;
-   strcpy(address, "C");
-   ret = ab_cip_write_float(fd, address, w_f_val);
-   printf("Write\t %s \tfloat:\t %f, \tret: %d\n", address, w_f_val, ret);
-   GET_RESULT(ret);
-
-   float f_val = 0;
-   ret = ab_cip_read_float(fd, address, &f_val);
-   printf("Read\t %s \tfloat:\t %f\n", address, f_val);
-   GET_RESULT(ret);
-
-   //////////////////////////////////////////////////////////////////////////
-#if true
-   // this function NEED TEST
-   double w_d_val = 12345.6789;
-   strcpy(address, "Double");
-   ret = ab_cip_write_double(fd, address, w_d_val);
-   printf("Write\t %s \tdouble:\t %lf, \tret: %d\n", address, w_d_val, ret);
-   GET_RESULT(ret);
-
-   double d_val = 0;
-   ret = ab_cip_read_double(fd, address, &d_val);
-   printf("Read\t %s \tdouble:\t %lf\n", address, d_val);
-   GET_RESULT(ret);
-
-#endif
-   //////////////////////////////////////////////////////////////////////////
-#if true
-   int length = 0; 
-   strcpy(address, "F");
-   char* str_val = NULL;
-
-   ret = ab_cip_read_string(fd, address, &length, &str_val);
-   printf("Read\t %s \tstring:\t %s\n", address, str_val);
-   free(str_val);
-   GET_RESULT(ret);
-#endif
-
-#ifdef _WIN32
-   Sleep(TEST_SLEEP_TIME);
-#else
-   usleep(TEST_SLEEP_TIME * 1000);
-#endif
-  }
-
-  printf("All Failed count: %d\n", failed_count);
-
-  ab_cip_disconnect(fd);
-  system("pause");
- }
-
-#ifdef _WIN32
- WSACleanup();
-#endif
+int fd = -1;
+bool ok = ab_cip_connect("127.0.0.1", 44818, 0, &fd);
+if (ok && fd > 0) {
+    /* perform read and write operations here */
+    ab_cip_disconnect(fd);
 }
 ```

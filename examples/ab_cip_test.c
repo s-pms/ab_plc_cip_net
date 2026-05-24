@@ -7,14 +7,21 @@
 
 #ifdef _WIN32
 #include <WinSock2.h>
+#include <windows.h>
+#pragma comment(lib, "ws2_32.lib")
+#else
+#include <unistd.h>
 #endif
+
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
+
 #pragma warning(disable : 4996)
 
-#define GET_RESULT(ret) { if (ret != 0) failed_count++;}
+#define GET_RESULT(ret) { if (ret != 0) failed_count++; }
 
-#include "ab_cip.h"
+#include "../ab_plc_cip_net/ab_cip.h"
 
 int main(int argc, char** argv)
 {
@@ -26,7 +33,7 @@ int main(int argc, char** argv)
 	}
 #endif
 
-	char* plc_ip = "127.0.0.1";
+	const char* plc_ip = "127.0.0.1";
 	int plc_port = 44818;
 	if (argc > 2)
 	{
@@ -35,8 +42,7 @@ int main(int argc, char** argv)
 	}
 
 	int fd = -1;
-	int slot = 0;
-	bool ret = ab_cip_connect(plc_ip, plc_port, 0, &fd);
+	bool ret = ab_cip_connect((char*)plc_ip, plc_port, 0, &fd);
 	if (ret && fd > 0)
 	{
 		cip_error_code_e ret = CIP_ERROR_CODE_FAILED;
@@ -50,7 +56,6 @@ int main(int argc, char** argv)
 		for (i = 0; i < TEST_COUNT; i++)
 		{
 			printf("==============Test count: %d==============\n", i + 1);
-			bool all_success = false;
 			//////////////////////////////////////////////////////////////////////////
 			bool val = true;
 			strcpy(address, "E");
@@ -94,7 +99,7 @@ int main(int argc, char** argv)
 			printf("Write\t %s \tint32:\t %d, \tret: %d\n", address, w_i_val, ret);
 			GET_RESULT(ret);
 
-			int i_val = 0;
+			int32 i_val = 0;
 			ret = ab_cip_read_int32(fd, address, &i_val);
 			printf("Read\t %s \tint32:\t %d\n", address, i_val);
 			GET_RESULT(ret);
@@ -122,8 +127,8 @@ int main(int argc, char** argv)
 			ret = ab_cip_read_int64(fd, address, &i64_val);
 			printf("Read\t %s \tint64:\t %lld\n", address, i64_val);
 			GET_RESULT(ret);
-
 #endif
+
 			//////////////////////////////////////////////////////////////////////////
 			uint64 w_ui64_val = 4333334554;
 			strcpy(address, "N");
@@ -131,7 +136,7 @@ int main(int argc, char** argv)
 			printf("Write\t %s \tuint64:\t %lld, \tret: %d\n", address, w_ui64_val, ret);
 			GET_RESULT(ret);
 
-			int64 ui64_val = 0;
+			uint64 ui64_val = 0;
 			ret = ab_cip_read_uint64(fd, address, &ui64_val);
 			printf("Read\t %s \tuint64:\t %lld\n", address, ui64_val);
 			GET_RESULT(ret);
@@ -150,7 +155,6 @@ int main(int argc, char** argv)
 
 			//////////////////////////////////////////////////////////////////////////
 #if true
-			// this function NEED TEST
 			double w_d_val = -12345.6789;
 			strcpy(address, "A1");
 			ret = ab_cip_write_double(fd, address, w_d_val);
@@ -161,8 +165,8 @@ int main(int argc, char** argv)
 			ret = ab_cip_read_double(fd, address, &d_val);
 			printf("Read\t %s \tdouble:\t %lf\n", address, d_val);
 			GET_RESULT(ret);
-
 #endif
+
 			//////////////////////////////////////////////////////////////////////////
 #if true
 			int length = 0;
@@ -184,10 +188,13 @@ int main(int argc, char** argv)
 		printf("All Failed count: %d\n", failed_count);
 
 		ab_cip_disconnect(fd);
+#ifdef _WIN32
 		system("pause");
+#endif
 	}
 
 #ifdef _WIN32
 	WSACleanup();
 #endif
+	return 0;
 }

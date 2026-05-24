@@ -1,68 +1,80 @@
 # Shared build rules for module-level makefiles.
-# Each module makefile should define BIN before including this file.
+# Required variables before including this file:
+#   TARGET       logical target name without prefix/suffix
+#   TARGET_TYPE  static | shared | executable
+#   SRCS         one or more .c source files
+
+ifndef TARGET
+$(error TARGET is required before including common.mk)
+endif
+
+ifndef TARGET_TYPE
+$(error TARGET_TYPE is required before including common.mk)
+endif
+
+ifndef SRCS
+$(error SRCS is required before including common.mk)
+endif
 
 .PHONY: all clean
 
+CC ?= gcc
+AR ?= ar
+RM ?= rm -f
+RM_RF ?= rm -rf
+MKDIR_P ?= mkdir -p
+
 ifeq ($(DEBUG),true)
-# Enable debug symbols for GNU toolchains.
-CC = gcc -g
-VERSION = debug
+CFLAGS_COMMON ?= -g -O0
 else
-CC = gcc
-VERSION = release
+CFLAGS_COMMON ?= -O2
 endif
 
-# Collect all C source files in the current directory.
-SRCS = $(wildcard *.c)
+OBJ_DIR := $(ARTIFACT_ROOT)/obj/$(TARGET)
+DEP_DIR := $(ARTIFACT_ROOT)/dep/$(TARGET)
 
-OBJS = $(SRCS:.c=.o)
-
-# Convert source filenames to dependency filenames.
-DEPS = $(SRCS:.c=.d)
-
-# Place the final output under BUILD_ROOT.
-BIN := $(addprefix $(BUILD_ROOT)/,$(BIN))
-
-# Central directories for object and dependency outputs.
-LINK_OBJ_DIR = $(BUILD_ROOT)/app/link_obj
-DEP_DIR = $(BUILD_ROOT)/app/dep
-
-# Create output directories if needed.
-$(shell mkdir -p $(LINK_OBJ_DIR))
-$(shell mkdir -p $(DEP_DIR))
-
-OBJS := $(addprefix $(LINK_OBJ_DIR)/,$(OBJS))
-DEPS := $(addprefix $(DEP_DIR)/,$(DEPS))
-
-# Gather objects already generated in the shared object directory.
-LINK_OBJ = $(wildcard $(LINK_OBJ_DIR)/*.o)
-# Also include current target objects that may not exist yet when wildcard runs.
-LINK_OBJ += $(OBJS)
-
-all: $(DEPS) $(OBJS) $(BIN)
-
-ifneq ("$(wildcard $(DEPS))","")
-include $(DEPS)
-endif
-
-$(BIN): $(LINK_OBJ)
-	@echo "------------------------build $(VERSION) mode--------------------------------!!!"
-
-ifeq ($(BUILD_SO), true)
-	# Build shared library output.
-	$(CC) -fPIC -shared -o $@.so $^
+ifeq ($(TARGET_TYPE),static)
+TARGET_DIR ?= $(ARTIFACT_ROOT)/lib
+TARGET_FILE := lib$(TARGET).a
+LINK_COMMAND = $(AR) rcs $@ $(OBJS)
+else ifeq ($(TARGET_TYPE),shared)
+TARGET_DIR ?= $(ARTIFACT_ROOT)/lib
+TARGET_FILE := lib$(TARGET).so
+TARGET_CFLAGS += -fPIC
+LINK_COMMAND = $(CC) -shared -o $@ $(OBJS) $(TARGET_LINK_INPUTS) $(TARGET_LDLIBS)
+else ifeq ($(TARGET_TYPE),executable)
+TARGET_DIR ?= $(ARTIFACT_ROOT)/bin
+TARGET_FILE := $(TARGET)
+LINK_COMMAND = $(CC) -o $@ $(OBJS) $(TARGET_LINK_INPUTS) $(TARGET_LDLIBS)
 else
-	# Build executable output.
-	$(CC) -o $@ $^
+$(error Unsupported TARGET_TYPE '$(TARGET_TYPE)')
 endif
 
-$(LINK_OBJ_DIR)/%.o: %.c
-	$(CC) -I$(INCLUDE_PATH) -o $@ -c $(filter %.c,$^)
+TARGET_OUTPUT := $(TARGET_DIR)/$(TARGET_FILE)
+SOURCE_DIRS := $(sort $(dir $(SRCS)))
+VPATH := $(SOURCE_DIRS)
+OBJS := $(addprefix $(OBJ_DIR)/,$(notdir $(SRCS:.c=.o)))
+DEPS := $(addprefix $(DEP_DIR)/,$(notdir $(SRCS:.c=.d)))
 
-$(DEP_DIR)/%.d: %.c
-	echo -n $(LINK_OBJ_DIR)/ > $@
-	# Append compiler-generated dependency rules.
-	gcc -I$(INCLUDE_PATH) -MM $^ >> $@
+ifneq ($(strip $(INCLUDE_DIRS)),)
+INCLUDE_FLAGS := $(addprefix -I,$(INCLUDE_DIRS))
+endif
+
+CFLAGS := $(CFLAGS_COMMON) $(TARGET_CFLAGS) $(INCLUDE_FLAGS)
+
+all: $(TARGET_OUTPUT)
+
+$(TARGET_DIR) $(OBJ_DIR) $(DEP_DIR):
+	@$(MKDIR_P) $@
+
+$(TARGET_OUTPUT): $(OBJS) $(TARGET_PREREQS) | $(TARGET_DIR)
+	$(LINK_COMMAND)
+
+$(OBJ_DIR)/%.o: %.c | $(OBJ_DIR) $(DEP_DIR)
+	$(CC) $(CFLAGS) -MMD -MP -MF $(DEP_DIR)/$*.d -c $< -o $@
+
+-include $(DEPS)
 
 clean:
-	rm -f $(BIN) $(OBJS) $(DEPS) *.gch
+	$(RM_RF) $(OBJ_DIR) $(DEP_DIR)
+	$(RM) $(TARGET_OUTPUT)

@@ -73,7 +73,7 @@ cip_error_code_e ab_cip_write_string(int fd, const char* address, int length, co
 
 ## 使用示例
 
-完整示例请参考 [ab_plc_cip_net/main.c](ab_plc_cip_net/main.c)。
+完整示例请参考 [examples/ab_cip_test.c](examples/ab_cip_test.c)。
 
 最小连接示例：
 
@@ -85,3 +85,42 @@ if (ok && fd > 0) {
     ab_cip_disconnect(fd);
 }
 ```
+
+## 构建方式
+
+当前仓库已拆分为两个公开目标：
+
+- 核心库：`ab_plc_cip_net`
+- 示例程序：`ab_cip_test`
+
+### 使用 Make 构建
+
+默认执行：
+
+```bash
+make
+```
+
+会先生成静态库，再链接示例程序，产物位于：
+
+- `artifacts/debug/lib/libab_plc_cip_net.a`
+- `artifacts/debug/bin/ab_cip_test`
+
+常用命令：
+
+```bash
+make lib                 # 仅构建静态库
+make shared              # 构建共享库 libab_plc_cip_net.so
+make example             # 构建并链接示例程序
+make clean               # 清理所有 artifacts
+make DEBUG=false         # 以 release 模式构建默认目标
+```
+
+### 使用 Visual Studio 构建
+
+解决方案 [ab_plc_cip_net/ab_plc_cip_net.sln](ab_plc_cip_net/ab_plc_cip_net.sln) 现在包含两个工程：
+
+- `ab_plc_cip_net`：生成静态库
+- `ab_cip_test`：链接静态库并生成示例程序
+
+MSVC 产物默认输出到 `artifacts/msvc/<Platform>/<Configuration>/` 目录下。
