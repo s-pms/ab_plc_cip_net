@@ -1,10 +1,12 @@
-﻿[English README](README_EN.md)
+﻿# ab_plc_cip_net
+
+[English README](README_EN.md)
 
 ## 版权与作者信息
 
 - License: MIT（见 [LICENSE](LICENSE)）
 - GitHub: iceman
-- Email: wqliceman@gmail.com
+- Email: [wqliceman@gmail.com](mailto:wqliceman@gmail.com)
 - Copyright (c) 2022-2026 iceman
 
 ## 项目概述
@@ -14,8 +16,7 @@
 - 支持系统：Windows / Linux
 - 测试设备：模拟 AB-CIP
 
-本项目实现了基于 CIP（EtherNet/IP）协议的罗克韦尔 AB-PLC 通讯能力。
-使用前请先在 PLC 侧正确配置以太网模块。
+本项目实现了一个基于 CIP（EtherNet/IP）协议的罗克韦尔 AB-PLC 通讯库。使用前请先在 PLC 侧正确配置以太网模块。
 
 ## 架构概览
 
@@ -30,21 +31,25 @@ flowchart LR
     Transport --> PLC["AB PLC / EtherNet-IP"]
 ```
 
-## 头文件
+## 公开头文件
 
 ```c
-#include "ab_cip.h"    // 协议接口
-#include "typedef.h"   // 类型定义
+#include "ab_cip.h"   // 公开 CIP 接口
+#include "typedef.h"  // 公开类型定义
 ```
 
 ## 连接参数
 
-- port：端口号，通常为 44818
-- plc_type：支持 1756 ControlLogix、1756 GuardLogix、1769 CompactLogix、5069 CompactLogix、Studio 5000 Logix Emulate 等型号
+- `port`：端口号，通常为 44818
+- `plc_type`：支持 1756 ControlLogix、1756 GuardLogix、1769 CompactLogix、5069 CompactLogix、Studio 5000 Logix Emulate 等常见型号
 
-## 主要接口
+## PLC 地址访问说明
 
-### 1. 连接与断开
+当前库支持基于标签名的读写访问，重点覆盖常见标量类型与字符串类型，而不是完整铺开全部 CIP 功能面。
+
+## API 参考
+
+### 连接与断开
 
 ```c
 byte get_plc_slot();
@@ -54,7 +59,7 @@ bool ab_cip_connect(char* ip_addr, int port, int slot, int* fd);
 bool ab_cip_disconnect(int fd);
 ```
 
-### 2. 读取数据
+### 读取数据
 
 ```c
 cip_error_code_e ab_cip_read_bool(int fd, const char* address, bool* val);
@@ -66,10 +71,10 @@ cip_error_code_e ab_cip_read_int64(int fd, const char* address, int64* val);
 cip_error_code_e ab_cip_read_uint64(int fd, const char* address, uint64* val);
 cip_error_code_e ab_cip_read_float(int fd, const char* address, float* val);
 cip_error_code_e ab_cip_read_double(int fd, const char* address, double* val);
-cip_error_code_e ab_cip_read_string(int fd, const char* address, int* length, char** val); // 需要释放 val
+cip_error_code_e ab_cip_read_string(int fd, const char* address, int* length, char** val);
 ```
 
-### 3. 写入数据
+### 写入数据
 
 ```c
 cip_error_code_e ab_cip_write_bool(int fd, const char* address, bool val);
@@ -81,30 +86,31 @@ cip_error_code_e ab_cip_write_int64(int fd, const char* address, int64 val);
 cip_error_code_e ab_cip_write_uint64(int fd, const char* address, uint64 val);
 cip_error_code_e ab_cip_write_float(int fd, const char* address, float val);
 cip_error_code_e ab_cip_write_double(int fd, const char* address, double val);
-cip_error_code_e ab_cip_write_string(int fd, const char* address, int length, const char* val); // length 为字符串原始字节数
+cip_error_code_e ab_cip_write_string(int fd, const char* address, int length, const char* val);
 ```
 
 ## 使用示例
 
-完整示例请参考 [examples/ab_cip_test.c](examples/ab_cip_test.c)。
-
-最小连接示例：
+完整示例请参考 [examples/ab_cip_test.c](examples/ab_cip_test.c)。示例程序与核心库目标已解耦，便于下游项目只链接库本体而不引入演示代码。
 
 ```c
 int fd = -1;
 bool ok = ab_cip_connect("127.0.0.1", 44818, 0, &fd);
 if (ok && fd > 0) {
-    // do read/write
+    // 在这里执行读写操作
     ab_cip_disconnect(fd);
 }
 ```
 
-## 构建方式
+## 构建与分发
 
-当前仓库已拆分为两个公开目标：
+当前仓库采用两级 Makefile 布局：
 
-- 核心库：`ab_plc_cip_net`
-- 示例程序：`ab_cip_test`
+- 示例源码：[examples/ab_cip_test.c](examples/ab_cip_test.c)
+- 构建配置：[config.mk](config.mk)
+- 共享规则：[common.mk](common.mk)
+- 库目标 Makefile：[ab_plc_cip_net/makefile](ab_plc_cip_net/makefile)
+- 示例目标 Makefile：[examples/makefile](examples/makefile)
 
 ### 构建与发布流程
 
@@ -121,60 +127,64 @@ flowchart LR
 
 ### 使用 Make 构建
 
-默认执行：
+在仓库根目录执行：
 
 ```bash
 make
+make clean
 ```
 
-会先生成静态库，再链接示例程序，产物位于：
+默认的 `make` 会先生成静态库，再链接示例程序。产物位于：
 
 - `artifacts/debug/lib/libab_plc_cip_net.a`
 - `artifacts/debug/bin/ab_cip_test`
 
+### 构建选项
+
+编辑 [config.mk](config.mk)：
+
+- `DEBUG=true`：启用 `-g` 调试符号
+- `DEBUG=false`：构建 release 模式
+- `BUILD_SHARED=true`：让库目标从静态库切换为共享库输出
+
 常用命令：
 
 ```bash
-make lib                 # 仅构建静态库
-make shared              # 构建共享库 libab_plc_cip_net.so
-make example             # 构建并链接示例程序
-make install             # 导出标准分发结构到 dist/<debug|release>/
-make package             # install 的别名
-make publish             # install 的别名
-make install-shared      # 导出共享库分发结构
-make clean               # 清理所有 artifacts
-make DEBUG=false         # 以 release 模式构建默认目标
+make lib
+make shared
+make example
+make install
+make package
+make publish
+make install-shared
+make DEBUG=false
 ```
 
-`make install` 默认会导出如下结构：
+`make install` 默认会导出如下标准分发结构：
 
 ```text
 dist/debug/
-    include/
-        ab_cip.h
-        typedef.h
-    lib/
-        libab_plc_cip_net.a
-    bin/
-        ab_cip_test           # 若示例已构建
-    share/doc/ab_plc_cip_net/
-        LICENSE
-        README.md
-        README_EN.md
+  include/
+    ab_cip.h
+    typedef.h
+  lib/
+    libab_plc_cip_net.a
+  bin/
+    ab_cip_test
+  share/doc/ab_plc_cip_net/
+    LICENSE
+    README.md
+    README_EN.md
 ```
 
-如果需要导出到自定义目录，可覆盖 `PREFIX`，例如：
+如果需要导出到其他目录，可以覆盖 `PREFIX`：
 
 ```bash
 make install PREFIX=/tmp/ab_plc_cip_net
 make install-shared PREFIX=/tmp/ab_plc_cip_net-shared
 ```
 
-### 使用 Visual Studio 构建
+### Windows 说明
 
-解决方案 [ab_plc_cip_net/ab_plc_cip_net.sln](ab_plc_cip_net/ab_plc_cip_net.sln) 现在包含两个工程：
-
-- `ab_plc_cip_net`：生成静态库
-- `ab_cip_test`：链接静态库并生成示例程序
-
-MSVC 产物默认输出到 `artifacts/msvc/<Platform>/<Configuration>/` 目录下。
+- Makefile 构建链假定系统中可用 GNU Make，例如通过 WSL 或 MSYS2
+- 如果使用 Visual Studio，请打开 [ab_plc_cip_net/ab_plc_cip_net.sln](ab_plc_cip_net/ab_plc_cip_net.sln)。当前解决方案已拆分为库工程和独立示例工程
