@@ -38,7 +38,7 @@ cip_error_code_e ab_cip_write_int64(int fd, const char* address, int64 val);
 cip_error_code_e ab_cip_write_uint64(int fd, const char* address, uint64 val);
 cip_error_code_e ab_cip_write_float(int fd, const char* address, float val);
 cip_error_code_e ab_cip_write_double(int fd, const char* address, double val);
-// Experimental: this API exists but still has known compatibility issues on some PLC layouts.
+// Writes a standard Logix STRING by updating .LEN and .DATA[0].
 cip_error_code_e ab_cip_write_string(int fd, const char* address, int length, const char* val);
 
 #endif //__H_AB_CIP_H__

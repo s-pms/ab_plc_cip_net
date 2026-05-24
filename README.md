@@ -68,8 +68,7 @@ cip_error_code_e ab_cip_write_int64(int fd, const char* address, int64 val);
 cip_error_code_e ab_cip_write_uint64(int fd, const char* address, uint64 val);
 cip_error_code_e ab_cip_write_float(int fd, const char* address, float val);
 cip_error_code_e ab_cip_write_double(int fd, const char* address, double val);
-// 暂不支持（存在已知问题）
-// cip_error_code_e ab_cip_write_string(int fd, const char* address, int length, const char* val);
+cip_error_code_e ab_cip_write_string(int fd, const char* address, int length, const char* val); // length 为字符串原始字节数
 ```
 
 ## 使用示例

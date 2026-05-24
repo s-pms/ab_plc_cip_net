@@ -29,6 +29,22 @@
 int port = 44818;
 char ip_address[64] = { 0 };
 
+static char* build_tag_member_address(const char* address, const char* suffix)
+{
+	if (address == NULL || suffix == NULL)
+		return NULL;
+
+	size_t address_len = strlen(address);
+	size_t suffix_len = strlen(suffix);
+	char* full_address = (char*)malloc(address_len + suffix_len + 1);
+	if (full_address == NULL)
+		return NULL;
+
+	memcpy(full_address, address, address_len);
+	memcpy(full_address + address_len, suffix, suffix_len + 1);
+	return full_address;
+}
+
 bool ab_cip_connect(char* ip_addr, int port, int slot, int* fd)
 {
 	if (ip_addr == NULL || fd == NULL)
@@ -377,6 +393,8 @@ cip_error_code_e ab_cip_write_int64(int fd, const char* address, int64 val)
 	byte_array_info write_data;
 	memset(&write_data, 0, sizeof(write_data));
 	write_data.data = (byte*)malloc(write_len);
+	if (write_data.data == NULL)
+		return CIP_ERROR_CODE_MALLOC_FAILED;
 	write_data.length = write_len;
 
 	bigInt2bytes(val, write_data.data);
@@ -447,36 +465,53 @@ cip_error_code_e ab_cip_write_double(int fd, const char* address, double val)
 
 cip_error_code_e ab_cip_write_string(int fd, const char* address, int length, const char* val)
 {
-	// this function use Type Code: CIP_Type_Byte
-	// NOT SUPPORT Type Code 0xDA
-	if (fd <= 0 || address == NULL || strlen(address) == 0 || val == NULL)
+	// Logix STRING writes update the .LEN member first, then write raw bytes into .DATA[0].
+	if (fd <= 0 || address == NULL || strlen(address) == 0 || length < 0)
+		return CIP_ERROR_CODE_INVALID_PARAMETER;
+	if (length > 0 && val == NULL)
+		return CIP_ERROR_CODE_INVALID_PARAMETER;
+	if (length > 0xFFFF)
 		return CIP_ERROR_CODE_INVALID_PARAMETER;
 
 	cip_error_code_e ret = CIP_ERROR_CODE_FAILED;
-	// 1. write length is even
-	byte write_len = length;
-	if (write_len % 2 == 1)
-		write_len += 1;
+	int padded_length = length;
+	if ((padded_length % 2) == 1)
+		padded_length += 1;
+
+	char* length_address = build_tag_member_address(address, ".LEN");
+	if (length_address == NULL)
+		return CIP_ERROR_CODE_MALLOC_FAILED;
 
 	byte_array_info write_data = { 0 };
-	write_data.data = (byte*)malloc(write_len);
+	if (padded_length > 0)
+		write_data.data = (byte*)malloc((size_t)padded_length);
+	else
+		write_data.data = NULL;
+
+	ret = ab_cip_write_int32(fd, length_address, length);
+	RELEASE_DATA(length_address);
+	if (ret != CIP_ERROR_CODE_SUCCESS)
+		return ret;
+
+	if (length == 0)
+		return CIP_ERROR_CODE_SUCCESS;
+
 	if (write_data.data != NULL)
 	{
-		memset(write_data.data, 0, write_len);
-		memcpy(write_data.data, val, length);
-		write_data.length = write_len;
+		char* data_address = NULL;
+		memset(write_data.data, 0, (size_t)padded_length);
+		memcpy(write_data.data, val, (size_t)length);
+		write_data.length = padded_length;
 
-		// 2. write length
-		char temp_addr[100] = { 0 };
-		sprintf(temp_addr, "%s.LEN", address);
-		ret = ab_cip_write_int32(fd, temp_addr, length);
-
-		// 3. write data
-		if (ret == CIP_ERROR_CODE_SUCCESS)
+		data_address = build_tag_member_address(address, ".DATA[0]");
+		if (data_address == NULL)
 		{
-			memset(temp_addr, 0, 100);
-			sprintf(temp_addr, "%s.DATA[0]", address);
-			ret = write_value(fd, temp_addr, 1, CIP_Type_Byte, write_data);
+			ret = CIP_ERROR_CODE_MALLOC_FAILED;
+		}
+		else
+		{
+			ret = write_value(fd, data_address, length, CIP_Type_Byte, write_data);
+			RELEASE_DATA(data_address);
 		}
 	}
 	else

@@ -164,7 +164,7 @@ byte_array_info build_write_core_command(const char* address, ushort typeCode, i
 			memcpy(command + 4 + 26 + 24, temp_address, addr_adjust_length);
 			command[4 + 26 + 24 + addr_adjust_length] = (byte)(typeCode % 256);
 			command[5 + 26 + 24 + addr_adjust_length] = (byte)(typeCode) / 256;
-			command[6 + 26 + 24 + addr_adjust_length] = (byte)(length % 256); // TODO length ??
+			command[6 + 26 + 24 + addr_adjust_length] = (byte)(length % 256); // element count, not padded payload size
 			command[7 + 26 + 24 + addr_adjust_length] = (byte)(length / 256);
 			memcpy(command + 8 + 26 + 24 + addr_adjust_length, value.data, value.length);
 
