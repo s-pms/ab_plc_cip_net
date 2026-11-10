@@ -19,7 +19,7 @@ byte_array_info build_write_core_command(const char* address, ushort typeCode, i
 cip_error_code_e cip_analysis_read_byte(byte_array_info response, byte_array_info* ret);
 cip_error_code_e cip_analysis_write_byte(byte_array_info response);
 
-bool read_data_from_server(int fd, byte_array_info send, int* session);
+bool read_data_from_server(int fd, byte_array_info send, uint32* session);
 bool cip_read_response(int fd, byte_array_info* response);
 
 cip_error_code_e read_value(int fd, const char* address, int length, byte_array_info* out_bytes);

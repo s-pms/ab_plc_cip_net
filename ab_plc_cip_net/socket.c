@@ -37,13 +37,17 @@ int socket_send_data(int fd, void* buf, int nbytes)
 	int nleft, nwritten;
 	char* ptr = (char*)buf;
 
-	if (fd < 0)
+	if (fd < 0 || nbytes < 0 || (nbytes > 0 && buf == NULL))
 		return -1;
 
 	nleft = nbytes;
 	while (nleft > 0)
 	{
+#ifdef MSG_NOSIGNAL
+		nwritten = send(fd, ptr, nleft, MSG_NOSIGNAL);
+#else
 		nwritten = send(fd, ptr, nleft, 0);
+#endif
 		if (nwritten <= 0)
 		{
 			if (socket_is_interrupted_error())

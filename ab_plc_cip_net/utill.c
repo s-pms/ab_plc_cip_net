@@ -68,10 +68,9 @@ void int2bytes(int32 i, byte* bytes)
 
 int32 bytes2int32(byte* bytes)
 {
-	int32 iRetVal = bytes[0] & 0xFF;
-	iRetVal |= (((int32)bytes[1] << 8) & 0xFF00);
-	iRetVal |= (((int32)bytes[2] << 16) & 0xFF0000);
-	iRetVal |= (((int32)bytes[3] << 24) & 0xFF000000);
+	uint32 bits = bytes2uint32(bytes);
+	int32 iRetVal;
+	memcpy(&iRetVal, &bits, sizeof(iRetVal));
 	return iRetVal;
 }
 
@@ -101,14 +100,9 @@ void bigInt2bytes(int64 i, byte* bytes)
 
 int64 bytes2bigInt(byte* bytes)
 {
-	int64 iRetVal = bytes[0] & 0xFF;
-	iRetVal |= (((int64)bytes[1] << 8) & 0xFF00);
-	iRetVal |= (((int64)bytes[2] << 16) & 0xFF0000);
-	iRetVal |= (((int64)bytes[3] << 24) & 0xFF000000);
-	iRetVal |= (((int64)bytes[4] << 32) & 0xFF00000000);
-	iRetVal |= (((int64)bytes[5] << 40) & 0xFF0000000000);
-	iRetVal |= (((int64)bytes[6] << 48) & 0xFF000000000000);
-	iRetVal |= (((int64)bytes[7] << 56) & 0xFF00000000000000);
+	uint64 bits = bytes2ubigInt(bytes);
+	int64 iRetVal;
+	memcpy(&iRetVal, &bits, sizeof(iRetVal));
 	return iRetVal;
 }
 
@@ -176,7 +170,7 @@ void str_toupper(char* input)
 
 	size_t len = strlen(input), i = 0;
 	for (; i < len; i++)
-		input[i] = toupper(input[i]);
+		input[i] = (char)toupper((unsigned char)input[i]);
 }
 
 void str_tolower(char* input)
@@ -186,7 +180,7 @@ void str_tolower(char* input)
 
 	size_t len = strlen(input), i = 0;
 	for (; i < len; i++)
-		input[i] = tolower(input[i]);
+		input[i] = (char)tolower((unsigned char)input[i]);
 }
 
 /**
@@ -241,7 +235,7 @@ uint32 htonf_(float value)
 {
 	uint32 Tempval;
 	uint32 Retval;
-	Tempval = *(uint32*)(&value);
+	memcpy(&Tempval, &value, sizeof(Tempval));
 	Retval = _WS2_32_WINSOCK_SWAP_LONG(Tempval);
 	return Retval;
 }
@@ -250,7 +244,7 @@ float ntohf_(uint32 value)
 {
 	const uint32 Tempval = _WS2_32_WINSOCK_SWAP_LONG(value);
 	float Retval = 0.0;
-	*((uint32*)&Retval) = Tempval;
+	memcpy(&Retval, &Tempval, sizeof(Retval));
 	return Retval;
 }
 
@@ -258,7 +252,7 @@ uint64 htond_(double value)
 {
 	uint64 Tempval;
 	uint64 Retval;
-	Tempval = *(uint64*)(&value);
+	memcpy(&Tempval, &value, sizeof(Tempval));
 	Retval = _WS2_32_WINSOCK_SWAP_LONGLONG(Tempval);
 	return Retval;
 }
@@ -267,7 +261,7 @@ double ntohd_(uint64 value)
 {
 	const uint64 Tempval = _WS2_32_WINSOCK_SWAP_LONGLONG(value);
 	double Retval = 0.0;
-	*((uint64*)&Retval) = Tempval;
+	memcpy(&Retval, &Tempval, sizeof(Retval));
 	return Retval;
 }
 
@@ -293,12 +287,14 @@ Convert integer to string
 PARAMS:
 - value     A 64-bit number to convert
 - str       Destination buffer; should be 66 characters long for radix2, 24 - radix8, 22 - radix10, 18 - radix16.
-- radix     Radix must be in range -36 .. 36. Negative values used for signed numbers.
+- radix     Absolute radix must be 2 .. 36. Negative values used for signed numbers.
 =============
 */
 
 char* itoa(unsigned long long value, char str[], int radix)
 {
+	if (str == NULL || radix < -36 || radix > 36 || (radix >= -1 && radix <= 1))
+		return NULL;
 	char buf[66];
 	char* dest = buf + sizeof(buf);
 	bool sign = false;

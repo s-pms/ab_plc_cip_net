@@ -13,12 +13,17 @@
 
 extern uint32 g_session;
 extern byte g_plc_slot;
-extern byte g_registered_command[28];
+extern const byte g_registered_command[28];
 
 // Build the core read command from a tag address.
 byte_array_info build_read_core_command(const char* address, int length)
 {
+	byte_array_info ret = { 0 };
+	if (address == NULL || length <= 0 || length > 0xffff)
+		return ret;
 	size_t addr_length = strlen(address);
+	if (addr_length == 0 || addr_length > 255)
+		return ret;
 	size_t addr_adjust_length = addr_length;
 	if (addr_adjust_length % 2 == 1)
 		addr_adjust_length += 1;
@@ -38,7 +43,7 @@ byte_array_info build_read_core_command(const char* address, int length)
 			command[2] = (byte)((command_len - 24) % 256);
 			command[3] = (byte)((command_len - 24) / 256); // Length
 
-			char temp_session[4] = { 0 };
+			byte temp_session[4] = { 0 };
 			uint2bytes(g_session, temp_session);
 			command[4] = temp_session[0];
 			command[5] = temp_session[1];
@@ -85,12 +90,16 @@ byte_array_info build_read_core_command(const char* address, int length)
 			command[8 + 24 + 26 + addr_adjust_length] = 0x01;
 			command[9 + 24 + 26 + addr_adjust_length] = g_plc_slot;
 		}
+		else
+		{
+			RELEASE_DATA(command);
+			command_len = 0;
+		}
 		RELEASE_DATA(temp_address);
 	}
 	else
 		command_len = 0;
 
-	byte_array_info ret = { 0 };
 	ret.data = command;
 	ret.length = command_len;
 	return ret;
@@ -98,16 +107,25 @@ byte_array_info build_read_core_command(const char* address, int length)
 
 byte_array_info build_write_core_command(const char* address, ushort typeCode, int length, byte_array_info value)
 {
+	byte_array_info ret = { 0 };
+	if (address == NULL || length <= 0 || length > 0xffff ||
+		value.data == NULL || value.length <= 0)
+		return ret;
 	int val_len = 0;
 	if (value.data != NULL)
 		val_len = value.length;
 
 	size_t addr_length = strlen(address);
+	if (addr_length == 0 || addr_length > 255)
+		return ret;
 	size_t addr_adjust_length = addr_length;
 	if (addr_adjust_length % 2 == 1)
 		addr_adjust_length += 1;
 
-	ushort command_len = 8 + 26 + (ushort)addr_adjust_length + val_len + 4 + 24;
+	// The encapsulation payload length is a 16-bit field.
+	if (val_len > 0xffff - 38 - (int)addr_adjust_length)
+		return ret;
+	int command_len = 8 + 26 + (int)addr_adjust_length + val_len + 4 + 24;
 	byte* command = (byte*)malloc(command_len);
 	if (command != NULL)
 	{
@@ -123,7 +141,7 @@ byte_array_info build_write_core_command(const char* address, ushort typeCode, i
 			command[2] = (byte)((command_len - 24) % 256);
 			command[3] = (byte)((command_len - 24) / 256); // Length
 
-			char temp_session[4] = { 0 };
+			byte temp_session[4] = { 0 };
 			uint2bytes(g_session, temp_session);
 			command[4] = temp_session[0];
 			command[5] = temp_session[1];
@@ -163,7 +181,7 @@ byte_array_info build_write_core_command(const char* address, ushort typeCode, i
 			command[3 + 26 + 24] = (byte)addr_length;
 			memcpy(command + 4 + 26 + 24, temp_address, addr_adjust_length);
 			command[4 + 26 + 24 + addr_adjust_length] = (byte)(typeCode % 256);
-			command[5 + 26 + 24 + addr_adjust_length] = (byte)(typeCode) / 256;
+			command[5 + 26 + 24 + addr_adjust_length] = (byte)(typeCode / 256);
 			command[6 + 26 + 24 + addr_adjust_length] = (byte)(length % 256); // element count, not padded payload size
 			command[7 + 26 + 24 + addr_adjust_length] = (byte)(length / 256);
 			memcpy(command + 8 + 26 + 24 + addr_adjust_length, value.data, value.length);
@@ -173,60 +191,60 @@ byte_array_info build_write_core_command(const char* address, ushort typeCode, i
 			command[10 + 26 + 24 + addr_adjust_length + val_len] = 0x01;
 			command[11 + 26 + 24 + addr_adjust_length + val_len] = g_plc_slot;
 		}
+		else
+		{
+			RELEASE_DATA(command);
+			command_len = 0;
+		}
 		RELEASE_DATA(temp_address);
 	}
 	else
 		command_len = 0;
 
-	byte_array_info ret = { 0 };
 	ret.data = command;
 	ret.length = command_len;
 	return ret;
 }
 
+static bool valid_reply(byte_array_info response, byte service)
+{
+	if (response.data == NULL || response.length < 44)
+		return false;
+	byte* data = response.data;
+	int item_length = bytes2ushort(data + 38);
+	// This library uses SendRRData with a null address and unconnected data item.
+	return bytes2ushort(data) == 0x6f &&
+		bytes2ushort(data + 2) == response.length - HEAD_SIZE &&
+		bytes2uint32(data + 8) == 0 && bytes2uint32(data + 24) == 0 &&
+		bytes2ushort(data + 30) == 2 && bytes2ushort(data + 32) == 0 &&
+		bytes2ushort(data + 34) == 0 && bytes2ushort(data + 36) == 0xb2 &&
+		item_length >= 4 && item_length <= response.length - 40 &&
+		data[40] == service && data[42] == 0 && data[43] == 0;
+}
+
 cip_error_code_e cip_analysis_read_byte(byte_array_info response, byte_array_info* ret)
 {
-	cip_error_code_e ret_code = CIP_ERROR_CODE_SUCCESS;
-	if (response.length == 0)
+	if (ret == NULL)
+		return CIP_ERROR_CODE_INVALID_PARAMETER;
+	memset(ret, 0, sizeof(*ret));
+	if (!valid_reply(response, 0xcc))
 		return CIP_ERROR_CODE_FAILED;
 
-	int temp_length = 0;
-	int data_length = 0;
-	if (response.length >= 40) // index 38 is data length[ushort]
-	{
-		data_length = bytes2ushort(response.data + 38);
-		if (data_length > 6)
-		{
-			temp_length = data_length - 6;
-			ret->data = (byte*)malloc(temp_length);
-			if (ret->data != NULL)
-			{
-				memset(ret->data, 0, temp_length);
-				memcpy(ret->data, response.data + 46, temp_length);
-				ret->type = bytes2ushort(response.data + 44);
-				ret->length = temp_length;
-			}
-			else
-				ret_code = CIP_ERROR_CODE_MALLOC_FAILED;
-		}
-	}
-	else
-	{
-		ret_code = CIP_ERROR_CODE_UNKOWN;
-	}
-	if (ret->data == NULL) {
-		ret_code = CIP_ERROR_CODE_UNKOWN;
-	}
-	return ret_code;
+	int data_length = bytes2ushort(response.data + 38) - 6;
+	if (data_length <= 0)
+		return CIP_ERROR_CODE_FAILED;
+	ret->data = (byte*)malloc((size_t)data_length);
+	if (ret->data == NULL)
+		return CIP_ERROR_CODE_MALLOC_FAILED;
+	memcpy(ret->data, response.data + 46, (size_t)data_length);
+	ret->type = bytes2ushort(response.data + 44);
+	ret->length = data_length;
+	return CIP_ERROR_CODE_SUCCESS;
 }
 
 cip_error_code_e cip_analysis_write_byte(byte_array_info response)
 {
-	cip_error_code_e ret_code = CIP_ERROR_CODE_SUCCESS;
-	if (response.length == 0)
-		return CIP_ERROR_CODE_FAILED;
-
-	return ret_code;
+	return valid_reply(response, 0xcd) ? CIP_ERROR_CODE_SUCCESS : CIP_ERROR_CODE_FAILED;
 }
 
 /// <summary>
@@ -304,16 +322,16 @@ bool initialization_on_connect(int fd)
 bool cip_read_response(int fd, byte_array_info* response)
 {
 	bool is_ok = false;
-	int nread = 0;
 	int content_size = 0;
 
-	if (fd < 0)
+	if (fd < 0 || response == NULL)
 		return false;
+	memset(response, 0, sizeof(*response));
 
 	byte* content = NULL;
 	byte head[HEAD_SIZE];
 	memset(head, 0, HEAD_SIZE);
-	int recv_size = socket_recv_data_one_loop(fd, head, HEAD_SIZE);
+	int recv_size = socket_recv_data(fd, head, HEAD_SIZE);
 	if (recv_size >= HEAD_SIZE) // header size
 	{
 		content_size = bytes2ushort(head + 2);
@@ -330,10 +348,10 @@ bool cip_read_response(int fd, byte_array_info* response)
 			recv_size = socket_recv_data(fd, content, content_size);
 		if (recv_size == content_size)
 		{
-			response->length = HEAD_SIZE + content_size;
-			response->data = (byte*)malloc(response->length);
+			response->data = (byte*)malloc(HEAD_SIZE + content_size);
 			if (response->data != NULL)
 			{
+				response->length = HEAD_SIZE + content_size;
 				memset(response->data, 0, response->length);
 				memcpy(response->data, head, HEAD_SIZE);
 				if (content_size > 0)
@@ -348,8 +366,11 @@ bool cip_read_response(int fd, byte_array_info* response)
 	return is_ok;
 }
 
-bool read_data_from_server(int fd, byte_array_info send, int* session)
+bool read_data_from_server(int fd, byte_array_info send, uint32* session)
 {
+	if (session == NULL)
+		return false;
+	*session = 0;
 	bool is_ok = false;
 	int need_send = send.length;
 	int real_sends = socket_send_data(fd, send.data, need_send);
@@ -359,7 +380,11 @@ bool read_data_from_server(int fd, byte_array_info send, int* session)
 	byte_array_info response = { 0 };
 	if (cip_read_response(fd, &response))
 	{
-		if (response.length > 8)
+		if (response.length == 28 && bytes2ushort(response.data) == 0x65 &&
+			bytes2uint32(response.data + 8) == 0 &&
+			bytes2ushort(response.data + 24) == 1 &&
+			bytes2ushort(response.data + 26) == 0 &&
+			bytes2uint32(response.data + 4) != 0)
 		{
 			*session = bytes2uint32(response.data + 4);
 			is_ok = true;

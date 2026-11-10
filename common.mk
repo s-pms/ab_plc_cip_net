@@ -17,6 +17,7 @@ $(error SRCS is required before including common.mk)
 endif
 
 .PHONY: all clean
+.DEFAULT_GOAL := all
 
 CC ?= gcc
 AR ?= ar
@@ -30,8 +31,8 @@ else
 CFLAGS_COMMON ?= -O2
 endif
 
-OBJ_DIR := $(ARTIFACT_ROOT)/obj/$(TARGET)
-DEP_DIR := $(ARTIFACT_ROOT)/dep/$(TARGET)
+OBJ_DIR := $(ARTIFACT_ROOT)/obj/$(TARGET)/$(TARGET_TYPE)
+DEP_DIR := $(ARTIFACT_ROOT)/dep/$(TARGET)/$(TARGET_TYPE)
 
 ifeq ($(TARGET_TYPE),static)
 TARGET_DIR ?= $(ARTIFACT_ROOT)/lib
